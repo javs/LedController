@@ -2,6 +2,7 @@
 
 #include <mbed.h>
 #include <platform/mbed_thread.h>
+#include <usb/USBHID.h>
 
 #include "settings.h"
 
@@ -18,58 +19,38 @@ EventQueue *queue = mbed_event_queue();
 
 DigitalOut led(LED1);
 InterruptIn button(USER_BUTTON);
-PwmOut white(PB_3);
-PwmOut brown(PB_5);
+PwmOut cool(D3 /*PB_3*/);
+PwmOut warm(D4 /*PB_5*/);
 Settings settings{};
 
-
-
 int main()
-{
+{   
     settings.PrintDiags();
 
     bool state = false;
 
     state = settings.GetOn();
 
-    white.period_us(Period.count());
-    brown.period_us(Period.count());
+    float warm_per = 0.5f;
+    float cool_per = 0.4f;
+    //float sign = 1.0f;
+
+    cool.period_us(Period.count());
+    warm.period_us(Period.count());
+
+    cool.pulsewidth_us(state ? Period.count() * cool_per : 0);
+    warm.pulsewidth_us(state ? Period.count() * warm_per : 0);
 
     button.rise([&](){
         state = !state;
 
-        white.pulsewidth_us(state ? Period.count() : 0);
-        brown.pulsewidth_us(state ? Period.count() : 0);
+        cool.pulsewidth_us(state ? Period.count() * cool_per : 0);
+        warm.pulsewidth_us(state ? Period.count() * warm_per : 0);
         
         queue->call([&]() {
             settings.SetOn(state);
         });
     });
-
-    float duty = 0.0f;
-    float sign = 1.0f;
-
-    // Warm-Cool Cycling
-    // queue->call_every(Delay, [&]() {
-    //     if (state) {
-    //         duty += sign * Increment;
-
-    //         if (duty >= 1.0f) {
-    //             duty = 1.0f;
-    //             sign *= -1.0f;
-    //         } else if (duty <= 0.0f) {
-    //             duty = 0.0f;
-    //             sign *= -1.0f;
-    //         }
-
-    //         white.pulsewidth_us(Period.count() * duty);
-    //         brown.pulsewidth_us(Period.count() * (1.0f - duty));
-    //     } else {
-    //         duty = 0.0f;
-    //         white.pulsewidth_us(0);
-    //         brown.pulsewidth_us(0);
-    //     }
-    // });
 
     queue->dispatch_forever();
 }
