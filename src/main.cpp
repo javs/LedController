@@ -1,11 +1,10 @@
-/*
- * Copyright (c) 2006-2020 Arm Limited and affiliates.
- * SPDX-License-Identifier: Apache-2.0
- */
-#include <stdio.h>
-#include "mbed.h"
-#include "USBHID.h"
 
+#include <stdio.h>
+#include <mbed.h>
+#include <USBHID.h>
+
+// Declare a USBHID device
+USBHID HID(true, 8, 8, 0x1234, 0x0006, 0x0001);
 
 HID_REPORT output_report = {
     .length = 8,
@@ -20,17 +19,6 @@ DigitalOut led_out(LED1);
 
 int main(void)
 {
-    // {
-    //     DigitalIn dplus{PA_12};
-    //     DigitalIn dminus{PA_11};
-    //     dplus.mode(PullDown);
-    //     dminus.mode(PullDown);
-    //     wait_us(5000);
-    // }
-
-    // Declare a USBHID device
-    USBHID HID(true, 8, 8);
-    
     while (1) {
 
         // Fill the report
