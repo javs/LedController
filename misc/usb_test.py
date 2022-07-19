@@ -1,9 +1,15 @@
+import threading
 from pywinusb import hid
+
+
+done = threading.Event()
 
 # Whenever the host computer receives data from the
 # Mbed board, the received data is printed
 def on_data(data):
     print(f"Got message {data}")
+    done.set()
+
 
 '''
 Gets all HIDs currently connected to host computer,
@@ -29,3 +35,5 @@ mbed_devices[0].set_raw_data_handler(on_data)
 out_report = mbed_devices[0].find_output_reports()
 out_report[0].set_raw_data(buffer)
 out_report[0].send()
+
+done.wait(5)
