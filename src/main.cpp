@@ -1,41 +1,72 @@
+#include <chrono>
 
-#include <stdio.h>
 #include <mbed.h>
-#include <USBHID.h>
+#include <platform/mbed_thread.h>
 
-// Declare a USBHID device
-USBHID HID(true, 8, 8, 0x1234, 0x0006, 0x0001);
+#include "usb_led_controller.hpp"
+#include "settings.hpp"
 
-HID_REPORT output_report = {
-    .length = 8,
-    .data = {0}
-};
-HID_REPORT input_report = {
-    .length = 0,
-    .data = {0}
-};
+using namespace std::chrono;
+using namespace std::chrono_literals;
 
-DigitalOut led_out(LED1);
 
-int main(void)
+const microseconds Period   =   5ms;
+const auto Delay            =   2ms;
+const auto Increment        = 0.0005f; // %
+
+
+DigitalOut led(LED1);
+InterruptIn button(BUTTON1);
+PwmOut cool(D3 /*PB_3*/);
+PwmOut warm(D4 /*PB_5*/);
+Settings settings{};
+
+
+int main()
 {
-    while (1) {
+    // Setup
+    //
+    EventQueue *queue = mbed_event_queue();
 
-        // Fill the report
-        for (int i = 0; i < output_report.length; i++) {
-            output_report.data[i] = rand() & UINT8_MAX;
-        }
+    led = 0;
 
-        // Send the report
-        HID.send(&output_report);
+    #ifdef DEVICE_USBDEVICE
+        printf("USB support is on.\n");
+    #endif
 
-        // Try to read a msg
-        if (HID.read_nb(&input_report)) {
-            led_out = !led_out;
-            for (int i = 0; i < input_report.length; i++) {
-                printf("%d ", input_report.data[i]);
-            }
-            printf("\r\n");
-        }
-    }
+    // settings.PrintDiags();
+
+    // bool state = false;
+
+    // state = settings.GetOn();
+
+    // float warm_per = 0.5f;
+    // float cool_per = 0.4f;
+    // //float sign = 1.0f;
+
+    // cool.period_us(Period.count());
+    // warm.period_us(Period.count());
+
+    // button.rise([&](){
+    //     state = !state;
+
+    //     cool.pulsewidth_us(state ? Period.count() * cool_per : 0);
+    //     warm.pulsewidth_us(state ? Period.count() * warm_per : 0);
+        
+    //     queue->call([&]() {
+    //         settings.SetOn(state);
+    //     });
+    // });
+
+    // // Initial state
+    // //
+    // cool.pulsewidth_us(state ? Period.count() * cool_per : 0);
+    // warm.pulsewidth_us(state ? Period.count() * warm_per : 0);
+
+    // block for usb
+    // Uses PA_11 USB_DM / PA_12 USB_DP
+    USBLEDController usb;
+    led = 1;
+
+    queue->dispatch_forever();
 }
