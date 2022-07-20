@@ -21,6 +21,14 @@ PwmOut cool(D3 /*PB_3*/);
 PwmOut warm(D4 /*PB_5*/);
 Settings settings{};
 
+USBLEDController::LEDState USBGetState(){
+    return USBLEDController::LEDState(2, 7);
+}
+
+void USBSetState(const USBLEDController::LEDState& state) {
+    printf("set state %d %d\n", state.first, state.second);
+}
+
 
 int main()
 {
@@ -65,7 +73,7 @@ int main()
 
     // block for usb
     // Uses PA_11 USB_DM / PA_12 USB_DP
-    USBLEDController usb;
+    USBLEDController usb {USBGetState, USBSetState};
     led = 1;
 
     queue->dispatch_forever();

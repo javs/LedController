@@ -5,8 +5,11 @@
 
 #include "usb_led_controller.hpp"
 
-USBLEDController::USBLEDController()
+USBLEDController::USBLEDController(std::function<LEDState()>&& get_handler,
+        std::function<void(const LEDState&)>&& set_handler)
     : USBHID(get_usb_phy(), ReportOutputLength, ReportInputLength, VendorId, ProductId, ProductRelease)
+    , m_GetStateHandler(get_handler)
+    , m_SetStateHandler(set_handler)
 {
     connect();
     wait_ready();
@@ -28,23 +31,46 @@ void USBLEDController::report_rx()
     {
         auto queue = mbed::mbed_event_queue();
 
-        queue->call([=]() {
-            printf("Received USB report (length = %d): ", input_report.length);
+        queue->call([=]() mutable {
+            const auto message_type = *(reinterpret_cast<MessageTypes*>(input_report.data));
 
-            for (int i = 0; i < input_report.length; i++)
-                printf("%d", input_report.data[i]);
+            switch(message_type)
+            {
+                case MessageTypes::GetLEDState:
+                {
+                    auto state = m_GetStateHandler();
+                    SendLEDState(state);
+                    break;
+                }
+                case MessageTypes::SetLEDState:
+                {
+                    auto state = *(reinterpret_cast<LEDState*>(input_report.data + sizeof(MessageTypes)));
+                    m_SetStateHandler(state);
 
-            printf("\n");
-
-            HID_REPORT output_report{
-                .length = ReportOutputLength,
-                .data = {0},
-            };
-
-            for (int i = 0; i < output_report.length; i++)
-                output_report.data[i] = rand() & UINT8_MAX;
-            
-            send(&output_report);
+                    // Respond back with the same state set
+                    SendLEDState(state);
+                    break;
+                }
+                default:
+                    printf("Invalid USB message: %hhu", message_type);
+            }
         });
     }
+}
+
+void USBLEDController::SendLEDState(LEDState state)
+{
+    HID_REPORT output_report{
+        .length = ReportOutputLength,
+        .data = {0},
+    };
+
+    // Fill type & state in the target structure
+    uint8_t* offset = output_report.data;
+    *(reinterpret_cast<MessageTypes*>(offset)) = MessageTypes::GetLEDState;
+
+    offset += sizeof(MessageTypes::GetLEDState);
+    *(reinterpret_cast<LEDState*>(offset)) = state;
+
+    send(&output_report);
 }
