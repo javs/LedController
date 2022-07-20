@@ -1,5 +1,8 @@
 #include "settings.hpp"
 
+#include <FlashIAP/FlashIAPBlockDevice.h>
+#include <tdbstore/TDBStore.h>
+
 Settings::Settings()
 {
     auto ret = flash_all.init();
@@ -21,6 +24,14 @@ Settings::Settings()
     ret = key_store->init();
     if (ret != MBED_SUCCESS)
         printf("Failed to init kv store: %i", ret);
+
+    ReadSettings();
+}
+
+Settings& Settings::get()
+{
+    static Settings instance;
+    return instance;
 }
 
 void Settings::PrintDiags()
@@ -42,23 +53,59 @@ void Settings::PrintDiags()
     printf("-- Flash Diagnostics --\n");
 }
 
+void Settings::ReadSettings()
+{
+    if (key_store->get("on", &m_SettingOn, sizeof(m_SettingOn)) != MBED_SUCCESS)
+        SetOn(m_SettingOn);
+    
+    if (key_store->get("warm", &m_SettingWarm, sizeof(m_SettingWarm)) != MBED_SUCCESS)
+        SetWarm(m_SettingWarm);
+
+    if (key_store->get("cool", &m_SettingCool, sizeof(m_SettingCool)) != MBED_SUCCESS)
+        SetCool(m_SettingCool);
+}
+
 bool Settings::GetOn()
 {
-    bool state = false;
-
-    auto res = key_store->get("on", &state, sizeof(state));
-    
-    // Set default
-    if (res != MBED_SUCCESS)
-        SetOn(state);
-
-    return state;
+    return m_SettingOn;
 }
 
 void Settings::SetOn(bool on)
 {
+    m_SettingOn = on;
+
     auto res = key_store->set("on", &on, sizeof(on), 0);
 
     if (res != MBED_SUCCESS)
-        printf("Failed to write: %i", res);
+        printf("Failed to write on setting: %i", res);
+}
+
+uint16_t Settings::GetWarm()
+{
+    return m_SettingWarm;
+}
+
+void Settings::SetWarm(uint16_t warm)
+{
+    m_SettingWarm = warm;
+    
+    auto res = key_store->set("warm", &warm, sizeof(warm), 0);
+
+    if (res != MBED_SUCCESS)
+        printf("Failed to write warm setting: %i", res);
+}
+
+uint16_t Settings::GetCool()
+{
+    return m_SettingCool;
+}
+
+void Settings::SetCool(uint16_t cool)
+{
+    m_SettingCool = cool;
+    
+    auto res = key_store->set("cool", &cool, sizeof(cool), 0);
+
+    if (res != MBED_SUCCESS)
+        printf("Failed to write cool setting: %i", res);
 }
