@@ -1,5 +1,6 @@
 #include <functional>
-#include <USBHID.h>
+#include <usb/USBHID.h>
+
 
 //! Exposes a USB HID device to the host.
 class USBLEDController : public USBHID

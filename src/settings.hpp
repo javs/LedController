@@ -2,8 +2,8 @@
 #include <memory>
 
 #include <FlashIAP.h>
-#include <FlashIAPBlockDevice.h>
-#include <TDBStore.h>
+#include <FlashIAP/FlashIAPBlockDevice.h>
+#include <tdbstore/TDBStore.h>
 
 //! Persistent settings
 class Settings {

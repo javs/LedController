@@ -1,0 +1,3 @@
+{
+    "cmake.buildDirectory": "${workspaceFolder}/cmake_build/NUCLEO_F303RE/develop/GCC_ARM/"
+}

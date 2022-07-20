@@ -1,10 +1,16 @@
+# mbed cli v1
 .build
 .mbed
 projectfiles
-*.py*
 mbed-os
 BUILD
 
+# keil
 compile_commands.json
 .clangd
 .cache
+
+
+# mbed cli v2
+.mbedbuild
+cmake_build/

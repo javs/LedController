@@ -1,6 +1,6 @@
 #include <cstdio>
 
-#include <mbed_events.h>
+#include <events/mbed_events.h>
 #include <usb/usb_phy_api.h>
 
 #include "usb_led_controller.hpp"

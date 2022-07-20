@@ -1,6 +1,7 @@
 #include <chrono>
 
 #include <mbed.h>
+#include <events/mbed_events.h>
 #include <platform/mbed_thread.h>
 
 #include "usb_led_controller.hpp"
