@@ -25,7 +25,8 @@ if not mbed_devices:
 
 # A buffer of bytes representing the values 1-8
 # The first byte is the report ID which must be 0
-buffer = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+#buffer = [0, 0, 0, 0, 0, 0]  # get
+buffer = [0, 1, 4, 0, 9, 0]  # set
 
 mbed_devices[0].open()
 # Set custom raw data handler
