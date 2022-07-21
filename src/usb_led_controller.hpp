@@ -2,7 +2,10 @@
 #include <usb/USBHID.h>
 
 
-//! Exposes a USB HID device to the host.
+/*!
+ * Exposes a USB HID device to the host.
+ * \note For STM32F, uses PA_11 USB_DM / PA_12 USB_DP
+ */
 class USBLEDController : public USBHID
 {
 public:
