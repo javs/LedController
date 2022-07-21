@@ -6,7 +6,7 @@
  * Exposes a USB HID device to the host.
  * \note For STM32F, uses PA_11 USB_DM / PA_12 USB_DP
  */
-class USBLEDController : public USBHID
+class USBLEDDevice : public USBHID
 {
 public:
     using LEDState = std::pair<uint16_t, uint16_t>;
@@ -15,10 +15,10 @@ public:
      * \param get_handler a handler that must return back the current state.
      * \param set_handler a handler that must set the state passed as argument.
      */
-    USBLEDController(std::function<LEDState()>&& get_handler,
+    USBLEDDevice(std::function<LEDState()>&& get_handler,
         std::function<void(const LEDState&)>&& set_handler);
     
-    ~USBLEDController();
+    ~USBLEDDevice();
 
     //! Send a usb message with the indicated state.
     void SendLEDState(LEDState state);

@@ -3,9 +3,9 @@
 #include <events/mbed_events.h>
 #include <usb/usb_phy_api.h>
 
-#include "usb_led_controller.hpp"
+#include "usb_led_device.hpp"
 
-USBLEDController::USBLEDController(std::function<LEDState()>&& get_handler,
+USBLEDDevice::USBLEDDevice(std::function<LEDState()>&& get_handler,
         std::function<void(const LEDState&)>&& set_handler)
     : USBHID(get_usb_phy(), ReportOutputLength, ReportInputLength, VendorId, ProductId, ProductRelease)
     , m_GetStateHandler(get_handler)
@@ -15,12 +15,12 @@ USBLEDController::USBLEDController(std::function<LEDState()>&& get_handler,
     wait_ready();
 }
 
-USBLEDController::~USBLEDController()
+USBLEDDevice::~USBLEDDevice()
 {
     deinit();
 }
 
-void USBLEDController::report_rx()
+void USBLEDDevice::report_rx()
 {
     HID_REPORT input_report{
         .length = 0,
@@ -58,7 +58,7 @@ void USBLEDController::report_rx()
     }
 }
 
-void USBLEDController::SendLEDState(LEDState state)
+void USBLEDDevice::SendLEDState(LEDState state)
 {
     HID_REPORT output_report{
         .length = ReportOutputLength,

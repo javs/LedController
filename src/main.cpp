@@ -5,16 +5,16 @@
 
 #include "led_component.hpp"
 #include "settings.hpp"
-#include "usb_led_controller.hpp"
+#include "usb_led_device.hpp"
 
 
 
 
-USBLEDController::LEDState USBGetState(){
-    return USBLEDController::LEDState(2, 7);
+USBLEDDevice::LEDState USBGetState(){
+    return USBLEDDevice::LEDState(2, 7);
 }
 
-void USBSetState(const USBLEDController::LEDState& state) {
+void USBSetState(const USBLEDDevice::LEDState& state) {
     printf("set state %d %d\n", state.first, state.second);
 }
 
@@ -59,7 +59,7 @@ int main()
     // warm.pulsewidth_us(state ? Period.count() * warm_per : 0);
 
     // Blocks until host connection
-    USBLEDController usb {USBGetState, USBSetState};
+    USBLEDDevice usb {USBGetState, USBSetState};
     led = 1;
 
     queue->dispatch_forever();

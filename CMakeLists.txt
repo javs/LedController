@@ -14,7 +14,7 @@ add_executable(${APP_TARGET}
     src/main.cpp
     src/led_component.cpp
     src/settings.cpp
-    src/usb_led_controller.cpp
+    src/usb_led_device.cpp
 )
 
 target_link_libraries(${APP_TARGET}
