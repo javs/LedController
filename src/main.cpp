@@ -3,63 +3,24 @@
 #include <mbed.h>
 #include <events/mbed_events.h>
 
-#include "led_component.hpp"
+#include "led_controller.hpp"
 #include "settings.hpp"
 #include "usb_led_device.hpp"
 
-
-
-
-USBLEDDevice::LEDState USBGetState(){
-    return USBLEDDevice::LEDState(2, 7);
-}
-
-void USBSetState(const USBLEDDevice::LEDState& state) {
-    printf("set state %d %d\n", state.first, state.second);
-}
-
-
 int main()
 {
-    DigitalOut led(LED1);
-    // InterruptIn button(BUTTON1);
-
-
-    // Setup
-    //
     EventQueue *queue = mbed_event_queue();
 
-    led = 0;
+    DigitalOut led {LED1, 0};
 
     Settings::get().PrintDiags();
 
-    LEDComponent cool(D3 /*PB_3*/);
-    LEDComponent warm(D4 /*PB_5*/);
+    LEDController controller;
 
-    #ifdef DEVICE_USBDEVICE
-        printf("USB support is on.\n");
-    #endif
+    // Blocks until host connection completes
+    USBLEDDevice usb {controller};
 
-    // state = settings.GetOn();
-
-    // button.rise([&](){
-    //     state = !state;
-
-    //     cool.pulsewidth_us(state ? Period.count() * cool_per : 0);
-    //     warm.pulsewidth_us(state ? Period.count() * warm_per : 0);
-        
-    //     queue->call([&]() {
-    //         settings.SetOn(state);
-    //     });
-    // });
-
-    // // Initial state
-    // //
-    // cool.pulsewidth_us(state ? Period.count() * cool_per : 0);
-    // warm.pulsewidth_us(state ? Period.count() * warm_per : 0);
-
-    // Blocks until host connection
-    USBLEDDevice usb {USBGetState, USBSetState};
+    // Setup complete
     led = 1;
 
     queue->dispatch_forever();

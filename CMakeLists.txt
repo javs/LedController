@@ -13,6 +13,7 @@ add_subdirectory(${MBED_PATH})
 add_executable(${APP_TARGET}
     src/main.cpp
     src/led_component.cpp
+    src/led_controller.cpp
     src/settings.cpp
     src/usb_led_device.cpp
 )

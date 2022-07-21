@@ -5,12 +5,14 @@
 
 #include "usb_led_device.hpp"
 
-USBLEDDevice::USBLEDDevice(std::function<LEDState()>&& get_handler,
-        std::function<void(const LEDState&)>&& set_handler)
+USBLEDDevice::USBLEDDevice(ILEDController& controller)
     : USBHID(get_usb_phy(), ReportOutputLength, ReportInputLength, VendorId, ProductId, ProductRelease)
-    , m_GetStateHandler(get_handler)
-    , m_SetStateHandler(set_handler)
+    , m_Controller(controller)
 {
+    #ifdef DEVICE_USBDEVICE
+        printf("USB support is on.\n");
+    #endif
+
     connect();
     wait_ready();
 }
@@ -38,14 +40,16 @@ void USBLEDDevice::report_rx()
             {
                 case MessageTypes::GetLEDState:
                 {
-                    auto state = m_GetStateHandler();
+                    auto state = m_Controller.GetState();
                     SendLEDState(state);
                     break;
                 }
                 case MessageTypes::SetLEDState:
                 {
-                    auto state = *(reinterpret_cast<LEDState*>(input_report.data + sizeof(MessageTypes)));
-                    m_SetStateHandler(state);
+                    auto state =
+                        *(reinterpret_cast<ILEDController::LEDState*>(
+                            input_report.data + sizeof(MessageTypes)));
+                    m_Controller.SetState(state);
 
                     // Respond back with the same state set
                     SendLEDState(state);
@@ -58,7 +62,7 @@ void USBLEDDevice::report_rx()
     }
 }
 
-void USBLEDDevice::SendLEDState(LEDState state)
+void USBLEDDevice::SendLEDState(ILEDController::LEDState state)
 {
     HID_REPORT output_report{
         .length = ReportOutputLength,
@@ -70,7 +74,7 @@ void USBLEDDevice::SendLEDState(LEDState state)
     *(reinterpret_cast<MessageTypes*>(offset)) = MessageTypes::GetLEDState;
 
     offset += sizeof(MessageTypes::GetLEDState);
-    *(reinterpret_cast<LEDState*>(offset)) = state;
+    *(reinterpret_cast<ILEDController::LEDState*>(offset)) = state;
 
     send(&output_report);
 }
