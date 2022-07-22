@@ -58,6 +58,8 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "mstd_atomic": "c",
+        "queue": "c"
     }
 }
