@@ -22,3 +22,8 @@ void LEDComponent::Set(uint16_t raw)
 {
     m_Pin = static_cast<float>(raw) / std::numeric_limits<uint16_t>::max();
 }
+
+float LEDComponent::GetPercentage()
+{
+    return m_Pin * 100.0f;
+}
