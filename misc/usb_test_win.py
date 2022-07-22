@@ -2,6 +2,7 @@
 
 import threading
 import struct
+import sys
 from pywinusb import hid
 from enum import Enum
 
@@ -11,6 +12,16 @@ class MessageType(Enum):
     SetState = 1
 
 
+def clamp_uint16(val):
+    return clamp(int(val), 0, 2 ** 16 -1)
+
+
+def clamp(val, minval, maxval):
+    if val < minval: return minval
+    if val > maxval: return maxval
+    return val
+
+
 def on_data(data):
     print(f"Got message {data}")
     (_, msg, on, warm, cool) = struct.unpack('<BB?HH', bytearray(data))
@@ -18,15 +29,15 @@ def on_data(data):
     warm = (warm / (2 ** 16)) * 100.0
     cool = (cool / (2 ** 16)) * 100.0
 
-    print(f"{MessageType(msg)} on: {on} warm: {warm:.2f} cool: {cool:.2f}")
+    print(f"[{MessageType(msg)}] {'ON' if on else 'OFF'} (Warm: {warm:.2f} / Cool: {cool:.2f})")
     done.set()
 
 
 def send_set_command(report, on, warm, cool):
-    warm /= 100 / (2 ** 16)
-    cool /= 100 / (2 ** 16)
+    warm = clamp_uint16(warm / 100 * (2 ** 16))
+    cool = clamp_uint16(cool / 100 * (2 ** 16))
     # The first byte is the report ID which must be 0
-    buffer = struct.pack('<BB?HH', 0, MessageType.SetState.value, on, int(warm), int(cool))
+    buffer = struct.pack('<BB?HH', 0, MessageType.SetState.value, on, warm, cool)
     print(f"Sending {buffer}")
     report.set_raw_data(buffer)
     report.send()
@@ -52,7 +63,14 @@ mbed_devices[0].open()
 mbed_devices[0].set_raw_data_handler(on_data)
 
 out_report = mbed_devices[0].find_output_reports()
-send_set_command(out_report[0], True, 40.0, 15.0)
-# send_get_command(out_report[0])
 
+if len(sys.argv) == 1:
+    send_get_command(out_report[0])
+elif len(sys.argv) == 3:
+    send_set_command(out_report[0], True, int(sys.argv[1]), int(sys.argv[2]))
+else:
+    print(f"Usage: {sys.argv[0]} <warm 0-100> <cool 0-100>")
+    sys.exit(1)
+
+# responses are instant, timeout after 5s
 done.wait(5)
