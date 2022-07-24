@@ -15,6 +15,8 @@
 
 #include <windows.ui.xaml.hosting.desktopwindowxamlsource.h>
 
+#include <winrt/Xaml.h>
+
 using namespace winrt;
 using namespace Windows::Foundation;
 
@@ -96,18 +98,20 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     // Update the XAML Island window size because initially it is 0,0.
     SetWindowPos(hWndXamlIsland, 0, 200, 100, 800, 200, SWP_SHOWWINDOW);
 
-    // Create the XAML content.
-    Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-    xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    //// Create the XAML content.
+    //Windows::UI::Xaml::Controls::StackPanel xamlContainer;
+    //xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
 
-    Windows::UI::Xaml::Controls::TextBlock tb;
-    tb.Text(L"Hello World from Xaml Islands!");
-    tb.VerticalAlignment(Windows::UI::Xaml::VerticalAlignment::Center);
-    tb.HorizontalAlignment(Windows::UI::Xaml::HorizontalAlignment::Center);
-    tb.FontSize(48);
+    //Windows::UI::Xaml::Controls::TextBlock tb;
+    //tb.Text(L"Hello World from Xaml Islands!");
+    //tb.VerticalAlignment(Windows::UI::Xaml::VerticalAlignment::Center);
+    //tb.HorizontalAlignment(Windows::UI::Xaml::HorizontalAlignment::Center);
+    //tb.FontSize(48);
 
-    xamlContainer.Children().Append(tb);
-    xamlContainer.UpdateLayout();
+    //xamlContainer.Children().Append(tb);
+    //xamlContainer.UpdateLayout();
+    winrt::Xaml::MainPage xamlContainer;
+
     desktopSource.Content(xamlContainer);
 
     // End XAML Island section.

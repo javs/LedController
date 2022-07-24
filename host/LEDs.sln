@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LEDs", "LEDs.vcxproj", "{CFECA544-200D-4D1D-8CFD-70DAB280250F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F7ECB10F-946E-4C0B-A418-AC32F3B1F7DE} = {F7ECB10F-946E-4C0B-A418-AC32F3B1F7DE}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Xaml", "Xaml\Xaml.vcxproj", "{F7ECB10F-946E-4C0B-A418-AC32F3B1F7DE}"
 EndProject

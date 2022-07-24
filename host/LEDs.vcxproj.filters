@@ -47,4 +47,7 @@
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <Page Include="Xaml\ManualControlPage.xaml" />
+  </ItemGroup>
 </Project>
