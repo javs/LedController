@@ -38,7 +38,6 @@ def send_set_command(report, on, warm, cool):
     cool = clamp_uint16(cool / 100 * (2 ** 16))
     # The first byte is the report ID which must be 0
     buffer = struct.pack('<BB?HH', 0, MessageType.SetState.value, on, warm, cool)
-    print(f"Sending {buffer}")
     report.set_raw_data(buffer)
     report.send()
 
