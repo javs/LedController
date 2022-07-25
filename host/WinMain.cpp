@@ -17,6 +17,8 @@
 
 #include <winrt/Xaml.h>
 
+#include "LEDDevice.h"
+
 using namespace winrt;
 using namespace Windows::Foundation;
 
@@ -37,7 +39,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     _hInstance = hInstance;
 
     // The main window class name.
-    const wchar_t szWindowClass[] = L"Win32DesktopApp";
+    const wchar_t szWindowClass[] = L"LEDs";
     WNDCLASSEX windowClass = { };
 
     windowClass.cbSize = sizeof(WNDCLASSEX);
@@ -56,9 +58,10 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
     _hWnd = CreateWindow(
         szWindowClass,
-        L"Windows c++ Win32 Desktop App",
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        L"LEDs",
+        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+        //WS_POPUPWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 300, 400,
         NULL,
         NULL,
         hInstance,
@@ -95,24 +98,17 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     // Get the new child window's HWND. 
     interop->get_WindowHandle(&hWndXamlIsland);
 
-    // Update the XAML Island window size because initially it is 0,0.
-    SetWindowPos(hWndXamlIsland, 0, 200, 100, 800, 200, SWP_SHOWWINDOW);
+    RECT rect;
+    GetClientRect(_hWnd, &rect);
 
-    //// Create the XAML content.
-    //Windows::UI::Xaml::Controls::StackPanel xamlContainer;
-    //xamlContainer.Background(Windows::UI::Xaml::Media::SolidColorBrush{ Windows::UI::Colors::LightGray() });
+    SetWindowPos(hWndXamlIsland, 0, 0, 0, rect.right, rect.bottom, SWP_SHOWWINDOW);
 
-    //Windows::UI::Xaml::Controls::TextBlock tb;
-    //tb.Text(L"Hello World from Xaml Islands!");
-    //tb.VerticalAlignment(Windows::UI::Xaml::VerticalAlignment::Center);
-    //tb.HorizontalAlignment(Windows::UI::Xaml::HorizontalAlignment::Center);
-    //tb.FontSize(48);
-
-    //xamlContainer.Children().Append(tb);
-    //xamlContainer.UpdateLayout();
     winrt::Xaml::MainPage xamlContainer;
 
     desktopSource.Content(xamlContainer);
+
+    LEDDevice device;
+    device.DiscoverDevice();
 
     // End XAML Island section.
 
@@ -139,14 +135,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM l
 
     switch (messageCode)
     {
-    case WM_PAINT:
-        if (hWnd == _hWnd)
-        {
-            hdc = BeginPaint(hWnd, &ps);
-            TextOut(hdc, 300, 5, greeting, wcslen(greeting));
-            EndPaint(hWnd, &ps);
-        }
-        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
