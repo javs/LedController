@@ -80,12 +80,12 @@ void Settings::SetOn(bool on)
         printf("Failed to write on setting: %i", res);
 }
 
-uint16_t Settings::GetWarm()
+RawLEDComponentType Settings::GetWarm()
 {
     return m_SettingWarm;
 }
 
-void Settings::SetWarm(uint16_t warm)
+void Settings::SetWarm(RawLEDComponentType warm)
 {
     m_SettingWarm = warm;
     
@@ -95,12 +95,12 @@ void Settings::SetWarm(uint16_t warm)
         printf("Failed to write warm setting: %i", res);
 }
 
-uint16_t Settings::GetCool()
+RawLEDComponentType Settings::GetCool()
 {
     return m_SettingCool;
 }
 
-void Settings::SetCool(uint16_t cool)
+void Settings::SetCool(RawLEDComponentType cool)
 {
     m_SettingCool = cool;
     

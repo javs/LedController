@@ -1,17 +1,20 @@
-#include <chrono>
-
-#include <mbed.h>
+#include <cstdio>
 #include <events/mbed_events.h>
+#include <DigitalOut.h>
 
 #include "led_controller.hpp"
+#include "led_device.h"
 #include "settings.hpp"
 #include "usb_led_device.hpp"
 
 int main()
 {
-    EventQueue *queue = mbed_event_queue();
+    EventQueue *queue = mbed::mbed_event_queue();
 
-    DigitalOut led {LED1, 0};
+    mbed::DigitalOut led {LED1, 1};
+
+    printf("LED Controller Device v%hhu.%hhu\n",
+        DeviceVersionMajor, DeviceVersionMinor);
 
     Settings::get().PrintDiags();
 
@@ -21,7 +24,7 @@ int main()
     USBLEDDevice usb {controller};
 
     // Setup complete
-    led = 1;
+    led = 0;
 
     queue->dispatch_forever();
 }

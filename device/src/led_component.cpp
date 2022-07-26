@@ -5,7 +5,7 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
-const microseconds LEDComponent::Period = 5ms;
+const microseconds LEDComponent::Period = 5ms; // 200hz
 
 LEDComponent::LEDComponent(PinName pin)
  : m_Pin(pin)
@@ -13,14 +13,14 @@ LEDComponent::LEDComponent(PinName pin)
     m_Pin.period_us(Period.count());
 }
 
-uint16_t LEDComponent::Get()
+RawLEDComponentType LEDComponent::Get()
 {
-    return m_Pin * std::numeric_limits<uint16_t>::max();
+    return m_Pin * std::numeric_limits<RawLEDComponentType>::max();
 }
 
-void LEDComponent::Set(uint16_t raw)
+void LEDComponent::Set(RawLEDComponentType raw)
 {
-    m_Pin = static_cast<float>(raw) / std::numeric_limits<uint16_t>::max();
+    m_Pin = static_cast<float>(raw) / std::numeric_limits<RawLEDComponentType>::max();
 }
 
 float LEDComponent::GetPercentage()

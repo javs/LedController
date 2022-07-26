@@ -7,15 +7,17 @@
 #include <FlashIAP/FlashIAPBlockDevice.h>
 #include <tdbstore/TDBStore.h>
 
+#include "led_device.h"
+
 //! Persistent settings
 class Settings {
     mbed::FlashIAP flash_all;
     std::unique_ptr<FlashIAPBlockDevice> flash_data;
     std::unique_ptr<mbed::TDBStore> key_store;
 
-    bool        m_SettingOn     = true;
-    uint16_t    m_SettingWarm   = std::numeric_limits<uint16_t>::max() / 2;
-    uint16_t    m_SettingCool   = 0;
+    bool                m_SettingOn     = true;
+    RawLEDComponentType m_SettingWarm   = std::numeric_limits<RawLEDComponentType>::max() / 2;
+    RawLEDComponentType m_SettingCool   = 0;
 
     //! Read all settings and write defaults if not found
     void ReadSettings();
@@ -30,9 +32,9 @@ public:
     bool GetOn();
     void SetOn(bool on);
 
-    uint16_t GetWarm();
-    void SetWarm(uint16_t warm);
+    RawLEDComponentType GetWarm();
+    void SetWarm(RawLEDComponentType warm);
 
-    uint16_t GetCool();
-    void SetCool(uint16_t cool);
+    RawLEDComponentType GetCool();
+    void SetCool(RawLEDComponentType cool);
 };

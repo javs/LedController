@@ -55,7 +55,7 @@ void LEDController::EnsureLimits()
             (m_Cool.GetPercentage() + m_Warm.GetPercentage()) - HighPowerPercentageTotal;
 
         const int RawComponentReduction =
-            ((DistanceToLimit / 2.0f) / 100) * std::numeric_limits<uint16_t>::max();
+            ((DistanceToLimit / 2.0f) / 100) * std::numeric_limits<RawLEDComponentType>::max();
         
         int new_warm = m_Warm.Get() - RawComponentReduction;
         int new_cool = m_Cool.Get() - RawComponentReduction;
@@ -85,18 +85,18 @@ void LEDController::EnsureLimits()
     }
 }
 
-ILEDController::LEDState LEDController::GetState()
+LEDState LEDController::GetState()
 {
     auto& settings = Settings::get();
 
-    return ILEDController::LEDState {
+    return LEDState {
         .on = settings.GetOn(),
         .warm = settings.GetWarm(),
         .cool = settings.GetCool(),
     };
 }
 
-void LEDController::SetState(const ILEDController::LEDState& state)
+void LEDController::SetState(const LEDState& state)
 {
     auto& settings = Settings::get();
 

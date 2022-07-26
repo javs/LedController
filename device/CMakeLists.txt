@@ -10,6 +10,9 @@ project(${APP_TARGET})
 
 add_subdirectory(${MBED_PATH})
 
+# workaround mbed not catching up 
+add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-register>)
+
 add_executable(${APP_TARGET}
     src/main.cpp
     src/led_component.cpp
@@ -18,13 +21,18 @@ add_executable(${APP_TARGET}
     src/usb_led_device.cpp
 )
 
+target_include_directories(${APP_TARGET}
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common/
+)
+
 target_link_libraries(${APP_TARGET}
     PRIVATE
         mbed-os
         mbed-events
         mbed-storage-tdbstore
         mbed-usb
-        )
+)
 
 mbed_set_post_build(${APP_TARGET})
 
