@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+// Prevents MS min/max defines
+#define NOMINMAX
+
 #include <unknwn.h>
 #include <windows.h>
 #ifdef GetCurrentTime

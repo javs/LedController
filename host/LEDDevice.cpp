@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "LEDDevice.h"
 #include <sstream>
+#include <limits>
 
 #include <winrt/Windows.Devices.Enumeration.h>
 #include <winrt/Windows.Storage.h>
@@ -10,13 +11,14 @@ using namespace winrt;
 using namespace Windows::Devices::HumanInterfaceDevice;
 using namespace Windows::Devices::Enumeration;
 using namespace Windows::Storage;
+using namespace Windows::Storage::Streams;
 
 fire_and_forget LEDDevice::DiscoverDevice()
 {
     uint16_t vendorId = 0x16c0;
-    uint16_t productId = 0x07CD;
-    uint16_t usagePage = 0x0000;
-    uint16_t usageId = 0x0000;
+    uint16_t productId = 0x05DF;
+    uint16_t usagePage = 0xFFAB;
+    uint16_t usageId = 0x0200;
 
     auto selector = HidDevice::GetDeviceSelector(usagePage, usageId, vendorId, productId);
 
@@ -34,6 +36,25 @@ fire_and_forget LEDDevice::DiscoverDevice()
                 oss << "Got Report with length: " << a.Report().Data().Length() << "\n";
                 MessageBox(GetDesktopWindow(), oss.str().c_str(), L"", MB_OK);
                 });
+
+            auto report = m_device.CreateOutputReport();
+
+            DataWriter dataWriter;
+
+            dataWriter.ByteOrder(ByteOrder::LittleEndian);
+
+            // Report Id is always the first byte
+            dataWriter.WriteByte(report.Id());
+            dataWriter.WriteByte(1); // set
+            dataWriter.WriteByte(1); // on
+            dataWriter.WriteUInt16(0.45f * std::numeric_limits<uint16_t>::max()); // warm
+            dataWriter.WriteUInt16(0.20f * std::numeric_limits<uint16_t>::max()); // cold
+
+            report.Data(dataWriter.DetachBuffer());
+
+            auto inspect = report.Data().data();
+
+            auto response = co_await m_device.SendOutputReportAsync(report);
             //// Input reports contain data from the device.
             //device.InputReportReceived += async(sender, args) = >
             //{

@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 
+// TODO: fix all this crap
 #include <windows.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,8 @@
 #include <winrt/windows.UI.Xaml.Hosting.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
+
+#include <sstream>
 
 #include <windowsx.h>
 
@@ -72,6 +75,9 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         MessageBox(NULL, L"Call to CreateWindow failed!", L"Error", NULL);
         return 0;
     }
+
+    RegisterPowerSettingNotification(_hWnd, &GUID_SESSION_USER_PRESENCE, DEVICE_NOTIFY_WINDOW_HANDLE);
+    RegisterPowerSettingNotification(_hWnd, &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
 
 
     // Begin XAML Island section.
@@ -150,10 +156,50 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM l
         // area, and enumerate the child windows. Pass the
         // dimensions to the child windows during enumeration.
         GetClientRect(hWnd, &rcClient);
-        MoveWindow(_childhWnd, 200, 200, 400, 500, TRUE);
+        MoveWindow(_childhWnd, 0, 0, rcClient.right, rcClient.bottom, TRUE);
         ShowWindow(_childhWnd, SW_SHOW);
 
         return 0;
+
+    case WM_POWERBROADCAST:
+    {
+        std::wostringstream out;
+        auto t = time(nullptr);
+
+        out << "[" << t << "] ";
+
+        switch (wParam)
+        {
+        case PBT_APMPOWERSTATUSCHANGE:
+            out << L"PBT_APMPOWERSTATUSCHANGE";
+            break;
+        case PBT_APMRESUMEAUTOMATIC:
+            out << L"PBT_APMRESUMEAUTOMATIC";
+            break;
+        case PBT_APMRESUMESUSPEND:
+            out << L"PBT_APMRESUMESUSPEND";
+            break;
+        case PBT_APMSUSPEND:
+            out << L"PBT_APMSUSPEND";
+            break;
+        case PBT_POWERSETTINGCHANGE:
+        {
+            out << L"PBT_POWERSETTINGCHANGE - ";
+            auto info = reinterpret_cast<POWERBROADCAST_SETTING*>(lParam);
+            if (info->PowerSetting == GUID_MONITOR_POWER_ON)
+                out << L"Monitor";
+            else if (info->PowerSetting == GUID_SESSION_USER_PRESENCE)
+                out << L"User Display";
+            else
+                out << L"Other";
+
+            out << " Data: " << info->Data[0];
+            break;
+        }
+        }
+        MessageBox(hWnd, out.str().c_str(), L"Msg", MB_OK);
+        return 0;
+    }
 
         // Process other messages.
 
