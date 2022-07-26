@@ -11,5 +11,5 @@ struct ILEDController
 #pragma pack(pop)
 
     virtual LEDState GetState() = 0;
-    virtual void SetState(const LEDState&) = 0;
+    virtual void SetState(const LEDState& state) = 0;
 };
