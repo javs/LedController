@@ -34,7 +34,7 @@ fire_and_forget LEDDevice::DiscoverDevice()
             m_device.InputReportReceived([](HidDevice d, HidInputReportReceivedEventArgs a) {
                 std::wostringstream oss{};
                 oss << "Got Report with length: " << a.Report().Data().Length() << "\n";
-                MessageBox(GetDesktopWindow(), oss.str().c_str(), L"", MB_OK);
+                //MessageBox(GetDesktopWindow(), oss.str().c_str(), L"", MB_OK);
                 });
 
             auto report = m_device.CreateOutputReport();

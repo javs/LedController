@@ -34,7 +34,8 @@ using namespace Windows::Foundation::Numerics;
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 
 HWND _hWnd;
-HWND _childhWnd;
+// This HWND will be the window handler for the XAML Island: A child window that contains XAML.  
+HWND hWndXamlIsland = nullptr;
 HINSTANCE _hInstance;
 
 int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
@@ -98,8 +99,6 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     // Parent the DesktopWindowXamlSource object to the current window.
     check_hresult(interop->AttachToWindow(_hWnd));
 
-    // This HWND will be the window handler for the XAML Island: A child window that contains XAML.  
-    HWND hWndXamlIsland = nullptr;
 
     // Get the new child window's HWND. 
     interop->get_WindowHandle(&hWndXamlIsland);
@@ -118,8 +117,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
     // End XAML Island section.
 
-    ShowWindow(_hWnd, nCmdShow);
-    UpdateWindow(_hWnd);
+    ShowWindow(_hWnd, SW_SHOWNORMAL);
 
     //Message loop:
     MSG msg = { };
@@ -145,21 +143,17 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM l
         PostQuitMessage(0);
         break;
 
-        // Create main window
     case WM_CREATE:
-        _childhWnd = CreateWindowEx(0, L"ChildWClass", NULL, WS_CHILD | WS_BORDER, 0, 0, 0, 0, hWnd, NULL, _hInstance, NULL);
+        // Workaround for https://github.com/CommunityToolkit/Microsoft.Toolkit.Win32/issues/170
+        SetForegroundWindow(GetDesktopWindow());
+        SetForegroundWindow(hWnd);
         return 0;
 
-        // Main window changed size
-    case WM_SIZE:
-        // Get the dimensions of the main window's client
-        // area, and enumerate the child windows. Pass the
-        // dimensions to the child windows during enumeration.
-        GetClientRect(hWnd, &rcClient);
-        MoveWindow(_childhWnd, 0, 0, rcClient.right, rcClient.bottom, TRUE);
-        ShowWindow(_childhWnd, SW_SHOW);
-
-        return 0;
+    //// Alt workaround (doesnt work)
+    //// from https://github.com/microsoft/microsoft-ui-xaml/issues/6414
+    //case WM_SETFOCUS:
+    //    SetFocus(hWndXamlIsland);
+    //    return 0;
 
     case WM_POWERBROADCAST:
     {
@@ -197,7 +191,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT messageCode, WPARAM wParam, LPARAM l
             break;
         }
         }
-        MessageBox(hWnd, out.str().c_str(), L"Msg", MB_OK);
+        //MessageBox(hWnd, out.str().c_str(), L"Msg", MB_OK);
         return 0;
     }
 
