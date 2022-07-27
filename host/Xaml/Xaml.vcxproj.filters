@@ -18,6 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="App.base.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

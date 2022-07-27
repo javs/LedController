@@ -1,11 +1,20 @@
 ﻿#include "pch.h"
-
 #include "App.h"
+#include "App.g.cpp"
 
 using namespace winrt;
-using namespace Xaml;
-using namespace Xaml::implementation;
+using namespace Windows::UI::Xaml;
 
-App::App()
+namespace winrt::Xaml::implementation
 {
+    App::App()
+    {
+        Initialize();
+        AddRef();
+        m_inner.as<::IUnknown>()->Release();
+    }
+    App::~App()
+    {
+        Close();
+    }
 }

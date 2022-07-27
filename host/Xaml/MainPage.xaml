@@ -5,10 +5,13 @@
     xmlns:local="using:Xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d" d:DesignHeight="322.667" d:DesignWidth="304.5"
     Background="{ThemeResource SystemControlAcrylicWindowBrush}">
 
-    <Grid Margin="5,5,5,5" >
+    <Button x:Name="myButton" Click="ClickHandler">Click Me</Button>
+    
+    <!--<Grid Margin="5,5,5,5" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width = "Auto" />
             <ColumnDefinition />
@@ -25,5 +28,5 @@
         <TextBlock Grid.Row="1" Grid.Column="0" x:Name="cool" Text="Cool" VerticalAlignment="Center"/>
         <Slider Grid.Row="1" Grid.Column="1" x:Name="cool_slider" VerticalAlignment="Center"/>
         <Button Grid.Row="2" Grid.Column="0" x:Name="myButton" Click="ClickHandler">Click Me</Button>
-    </Grid>
+    </Grid>-->
 </Page>
