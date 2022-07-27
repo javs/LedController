@@ -9,8 +9,10 @@
     mc:Ignorable="d" d:DesignHeight="322.667" d:DesignWidth="304.5"
     Background="{ThemeResource SystemControlAcrylicWindowBrush}">
 
-    <Button x:Name="myButton" Click="ClickHandler">Click Me</Button>
-    
+    <muxc:NavigationView PaneTitle="Welcome">
+        <TextBlock Text="Hello, World!" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{StaticResource TitleTextBlockStyle}"/>
+    </muxc:NavigationView>
+
     <!--<Grid Margin="5,5,5,5" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width = "Auto" />
