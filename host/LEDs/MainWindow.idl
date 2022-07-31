@@ -4,7 +4,5 @@ namespace LEDs
     runtimeclass MainWindow : Microsoft.UI.Xaml.Window
     {
         MainWindow();
-
-        Boolean Wheel;
     }
 }

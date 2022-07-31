@@ -8,12 +8,12 @@ namespace winrt::LEDs::implementation
     {
         MainWindow();
 
+        HWND GetHWND() const;
         winrt::Microsoft::UI::Windowing::AppWindow GetAppWindow();
 
-        bool Wheel();
-        void Wheel(bool value);
+        void DPIAwareResizeClient(int height, int width);
 
-        fire_and_forget myButton_Click(Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void Window_Activated(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
     };
 }
 

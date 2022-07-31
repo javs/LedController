@@ -5,26 +5,40 @@
     xmlns:local="using:LEDs"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
-    <Grid Padding="5,5,5,5" Width="Auto" HorizontalAlignment="Stretch"  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <!--<Grid.Background>
-            <AcrylicBrush TintColor="Black"/>
-        </Grid.Background>-->
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width = "Auto" />
-            <ColumnDefinition Width = "*"/>
-        </Grid.ColumnDefinitions>
+    mc:Ignorable="d"
+    Activated="Window_Activated">
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height = "Auto" />
-            <RowDefinition Height = "Auto" />
-            <RowDefinition Height = "Auto" />
-        </Grid.RowDefinitions>
+    <StackPanel
+        Padding="8"
+        Width="Auto" HorizontalAlignment="Center"
+        Height="Auto" VerticalAlignment="Center"
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        >
+        
+        <!--<StackPanel.Background>
+            <AcrylicBrush TintColor="Gray"/>
+        </StackPanel.Background>-->
 
-        <TextBlock Grid.Row="0" Grid.Column="0" x:Name="warm" Text="Warm" VerticalAlignment="Center"/>
-        <Slider Grid.Row="0" Grid.Column="1" x:Name="warm_slider" VerticalAlignment="Center" />
-        <TextBlock Grid.Row="1" Grid.Column="0" x:Name="cool" Text="Cool" VerticalAlignment="Center"/>
-        <Slider Grid.Row="1" Grid.Column="1" x:Name="cool_slider" VerticalAlignment="Center"/>
-        <Button Grid.Row="2" Grid.Column="0" x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </Grid>
+        <TextBlock FontWeight="Bold" Text="Monitor LEDs"/>
+        
+        <Grid ColumnSpacing="10" RowSpacing="5" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width = "Auto" />
+                <ColumnDefinition Width = "300" />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height = "Auto" />
+                <RowDefinition Height = "Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" x:Name="warm" Text="Warm" VerticalAlignment="Center" />
+            <Slider Grid.Row="0" Grid.Column="1" x:Name="warm_slider" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="1" Grid.Column="0" x:Name="cool" Text="Cool" VerticalAlignment="Center"/>
+            <Slider Grid.Row="1" Grid.Column="1" x:Name="cool_slider" VerticalAlignment="Center"/>
+        </Grid>
+        
+        <CheckBox x:Name="AutoControl" HorizontalAlignment="Center">Automatic</CheckBox>
+        
+    </StackPanel>
 </Window>

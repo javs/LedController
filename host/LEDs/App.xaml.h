@@ -14,6 +14,8 @@ namespace winrt::LEDs::implementation
 
         void OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
 
+        void OnTrayClick(NotifyIcon::MouseButton button);
+
     private:
 
         winrt::LEDs::MainWindow window {nullptr};

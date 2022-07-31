@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 
 #include <stdexcept>
+#include <functional>
 
 #include "App.xaml.h"
 #include "MainWindow.xaml.h"
@@ -47,27 +48,41 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
         L"LEDs");
 
     window = make<MainWindow>();
-    
-    tray_icon->SetClickAction([&](auto m) {
-        auto app_window = window.as<MainWindow>()->GetAppWindow();
 
-        switch (m)
-        {
-        case NotifyIcon::MouseButton::Right:
-            window.Close();
-            break;
-        default:
-            if (app_window.IsVisible())
-                app_window.Hide();
-            else
-                app_window.Show(true);
-        }
-        });
+    tray_icon->SetClickAction(bind_front(&App::OnTrayClick, this));
+}
 
-    tray_icon->SetWheelAction([&](auto up) {
-        // this is already in UI thread
-        //co_await wil::resume_foreground(window.DispatcherQueue());
-        window.Wheel(up > 0);
-        });
+void winrt::LEDs::implementation::App::OnTrayClick(NotifyIcon::MouseButton button)
+{
+    switch (button)
+    {
+    case NotifyIcon::MouseButton::Left:
+    {
+        const auto main_window = window.as<MainWindow>();
+        const auto app_window = main_window->GetAppWindow();
+
+        RECT icon_rect{};
+        tray_icon->GetNotifyIconRect(icon_rect);
+
+        // Show first so window layout is calculated (window.Content().UpdateLayout() doesnt work)
+        app_window.Show(true);
+
+        // Activate only works the first time, ensure the focus is always set
+        SetForegroundWindow(main_window->GetHWND());
+            
+        const auto window_size = app_window.ClientSize();
+
+        app_window.Move({
+            icon_rect.right - window_size.Width,
+            icon_rect.top - window_size.Height,
+            });
+        break;
+    }
+    case NotifyIcon::MouseButton::Right:
+        window.Close();
+        break;
+    default:
+        break;
+    }
 }
 

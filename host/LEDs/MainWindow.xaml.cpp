@@ -28,18 +28,24 @@ namespace winrt::LEDs::implementation
         presenter.IsResizable(false);
         presenter.IsMaximizable(false);
         presenter.SetBorderAndTitleBar(true, false);
-        app_window.Resize({ 350, 200 });
     }
-        
-    AppWindow MainWindow::GetAppWindow()
+    
+    HWND MainWindow::GetHWND() const
     {
         HWND hwnd{};
         auto window_native = this->try_as<IWindowNative>();
-        
+
         if (!window_native)
             throw runtime_error("Failed to get window_native");
 
         check_hresult(window_native->get_WindowHandle(&hwnd));
+
+        return hwnd;
+    }
+
+    AppWindow MainWindow::GetAppWindow()
+    {
+        auto hwnd = GetHWND();
         auto winid = winrt::Microsoft::UI::GetWindowIdFromWindow(hwnd);
         auto app_window = AppWindow::GetFromWindowId(winid);
 
@@ -49,21 +55,28 @@ namespace winrt::LEDs::implementation
         return app_window;
     }
 
-    bool MainWindow::Wheel()
+    void MainWindow::DPIAwareResizeClient(int height, int width)
     {
-        return false;
+        const auto hwnd = GetHWND();
+        const auto dpi = ::GetDpiForWindow(hwnd);
+        const float scalingFactor = static_cast<float>(dpi) / 96;
+        const auto app_window = GetAppWindow();
+
+        app_window.Resize({
+            static_cast<int32_t>(width * scalingFactor),
+            static_cast<int32_t>(height * scalingFactor),
+            });
     }
 
-    void MainWindow::Wheel(bool up)
+    void MainWindow::Window_Activated(IInspectable const& sender, WindowActivatedEventArgs const& args)
     {
-        myButton().Content(box_value(up ? L"up" : L"down"));
-    }
-
-    fire_and_forget MainWindow::myButton_Click(IInspectable const&, RoutedEventArgs const&)
-    {
-        co_await wil::resume_foreground(this->DispatcherQueue());
-        auto h = std::to_wstring(reinterpret_cast<uint32_t>(GetDesktopWindow()));
-        SetForegroundWindow(GetDesktopWindow());
-        myButton().Content(box_value(h));
+        if (args.WindowActivationState() == WindowActivationState::Deactivated)
+            GetAppWindow().Hide();
+        else
+        {
+            // Resize to contents
+            auto content_size = this->Content().ActualSize();
+            DPIAwareResizeClient(content_size.y, content_size.x);
+        }
     }
 }
