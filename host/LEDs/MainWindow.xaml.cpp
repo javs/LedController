@@ -9,11 +9,12 @@
 #include <microsoft.ui.xaml.window.h>
 #include <wil/cppwinrt_helpers.h>
 
-using namespace winrt;
-using namespace Microsoft::UI::Xaml;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using namespace std;
+using namespace winrt;
+using namespace winrt::Microsoft::UI::Xaml;
+using namespace winrt::Microsoft::UI::Windowing;
+
 
 namespace winrt::LEDs::implementation
 {
@@ -21,15 +22,31 @@ namespace winrt::LEDs::implementation
     {
         InitializeComponent();
 
-        HWND hwnd{ nullptr };
-        this->try_as<IWindowNative>()->get_WindowHandle(&hwnd);
-        auto winid = winrt::Microsoft::UI::GetWindowIdFromWindow(hwnd);
-        auto app_window = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(winid);
+        auto app_window = GetAppWindow();
         auto presenter = app_window.Presenter().as<winrt::Microsoft::UI::Windowing::OverlappedPresenter>();
+
         presenter.IsResizable(false);
         presenter.IsMaximizable(false);
         presenter.SetBorderAndTitleBar(true, false);
+        app_window.Resize({ 350, 200 });
+    }
         
+    AppWindow MainWindow::GetAppWindow()
+    {
+        HWND hwnd{};
+        auto window_native = this->try_as<IWindowNative>();
+        
+        if (!window_native)
+            throw runtime_error("Failed to get window_native");
+
+        check_hresult(window_native->get_WindowHandle(&hwnd));
+        auto winid = winrt::Microsoft::UI::GetWindowIdFromWindow(hwnd);
+        auto app_window = AppWindow::GetFromWindowId(winid);
+
+        if (!app_window)
+            throw runtime_error("Failed to get AppWindow");
+
+        return app_window;
     }
 
     bool MainWindow::Wheel()

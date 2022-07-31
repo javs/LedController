@@ -15,7 +15,8 @@ namespace winrt::LEDs::implementation
         void OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
 
     private:
-        winrt::Microsoft::UI::Xaml::Window window{ nullptr };
-        std::unique_ptr<NotifyIcon> m_icon;
+
+        winrt::Microsoft::UI::Xaml::Window window {nullptr};
+        std::unique_ptr<NotifyIcon> tray_icon {};
     };
 }

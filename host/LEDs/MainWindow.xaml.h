@@ -8,6 +8,8 @@ namespace winrt::LEDs::implementation
     {
         MainWindow();
 
+        winrt::Microsoft::UI::Windowing::AppWindow GetAppWindow();
+
         bool Wheel();
         void Wheel(bool value);
 

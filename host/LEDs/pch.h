@@ -3,6 +3,9 @@
 #include <windows.h>
 #include <unknwn.h>
 #include <restrictederrorinfo.h>
+
+#include <wil/cppwinrt.h>
+
 #include <hstring.h>
 
 // Undefine GetCurrentTime macro to prevent
@@ -22,5 +25,9 @@
 #include <winrt/Microsoft.UI.Xaml.Media.h>
 #include <winrt/Microsoft.UI.Xaml.Navigation.h>
 #include <winrt/Microsoft.UI.Xaml.Shapes.h>
+
 #include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Microsoft.UI.Windowing.h>
+
 #include <wil/cppwinrt_helpers.h>
+#include <wil/result.h>
