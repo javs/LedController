@@ -1,0 +1,3 @@
+[submodule "host/TrayIcon"]
+	path = host/TrayIcon
+	url = git@github.com:javs/TrayIcon.git

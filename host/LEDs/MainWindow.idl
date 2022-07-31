@@ -1,0 +1,10 @@
+namespace LEDs
+{
+    [default_interface]
+    runtimeclass MainWindow : Microsoft.UI.Xaml.Window
+    {
+        MainWindow();
+
+        Boolean Wheel;
+    }
+}
