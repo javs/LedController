@@ -48,7 +48,6 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
 
     window = make<MainWindow>();
     
-    
     tray_icon->SetClickAction([&](auto m) {
         auto app_window = window.as<MainWindow>()->GetAppWindow();
 
@@ -68,7 +67,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
     tray_icon->SetWheelAction([&](auto up) {
         // this is already in UI thread
         //co_await wil::resume_foreground(window.DispatcherQueue());
-        window.as<MainWindow>()->Wheel(up > 0);
+        window.Wheel(up > 0);
         });
 }
 

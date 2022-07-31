@@ -16,7 +16,7 @@ namespace winrt::LEDs::implementation
 
     private:
 
-        winrt::Microsoft::UI::Xaml::Window window {nullptr};
+        winrt::LEDs::MainWindow window {nullptr};
         std::unique_ptr<NotifyIcon> tray_icon {};
     };
 }
