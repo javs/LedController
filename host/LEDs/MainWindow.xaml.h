@@ -11,7 +11,7 @@ namespace winrt::LEDs::implementation
         HWND GetHWND() const;
         winrt::Microsoft::UI::Windowing::AppWindow GetAppWindow();
 
-        void DPIAwareResizeClient(int height, int width);
+        void DPIAwareResizeClient(float height, float width);
 
         void Window_Activated(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
     };

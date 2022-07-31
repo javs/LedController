@@ -1,16 +1,11 @@
 ﻿#include "pch.h"
 
-#include <stdexcept>
 #include <functional>
 
 #include "App.xaml.h"
 #include "MainWindow.xaml.h"
 
 #include "NotifyIcon.h"
-
-#include <winrt/Microsoft.UI.Interop.h>
-
-#include <microsoft.ui.xaml.window.h>
 
 
 using namespace std;

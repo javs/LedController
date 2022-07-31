@@ -7,7 +7,6 @@
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <microsoft.ui.xaml.window.h>
-#include <wil/cppwinrt_helpers.h>
 
 
 using namespace std;
@@ -55,7 +54,7 @@ namespace winrt::LEDs::implementation
         return app_window;
     }
 
-    void MainWindow::DPIAwareResizeClient(int height, int width)
+    void MainWindow::DPIAwareResizeClient(float height, float width)
     {
         const auto hwnd = GetHWND();
         const auto dpi = ::GetDpiForWindow(hwnd);
@@ -68,7 +67,7 @@ namespace winrt::LEDs::implementation
             });
     }
 
-    void MainWindow::Window_Activated(IInspectable const& sender, WindowActivatedEventArgs const& args)
+    void MainWindow::Window_Activated(IInspectable const&, WindowActivatedEventArgs const& args)
     {
         if (args.WindowActivationState() == WindowActivationState::Deactivated)
             GetAppWindow().Hide();
