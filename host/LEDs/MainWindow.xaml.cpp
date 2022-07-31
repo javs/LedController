@@ -78,4 +78,10 @@ namespace winrt::LEDs::implementation
             DPIAwareResizeClient(content_size.y, content_size.x);
         }
     }
+
+    void MainWindow::SetState(bool on, float warm, float cool)
+    {
+        warm_slider().Value(warm * 100.0f);
+        cool_slider().Value(cool * 100.0f);
+    }
 }

@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "NotifyIcon.h"
+#include "LEDDevice.h"
 
 namespace winrt::LEDs::implementation
 {
@@ -13,12 +14,14 @@ namespace winrt::LEDs::implementation
         App();
 
         void OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
+        fire_and_forget OnLEDDeviceChange(bool on, float warm, float cool);
 
-        void OnTrayClick(NotifyIcon::MouseButton button);
+        fire_and_forget OnTrayClick(NotifyIcon::MouseButton button);
 
     private:
 
         winrt::LEDs::MainWindow window {nullptr};
         std::unique_ptr<NotifyIcon> tray_icon {};
+        std::unique_ptr<LEDDevice> led_device {};
     };
 }

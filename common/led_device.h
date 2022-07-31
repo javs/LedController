@@ -25,8 +25,10 @@ enum class USBMessageTypes : uint8_t {
 };
 
 //! See https://github.com/obdev/v-usb/blob/master/usbdrv/USB-IDs-for-free.txt
-const uint16_t       USBVendorId             = 0x16c0;  //!< Van Ooijen Technische Informatica
+const uint16_t       USBVendorId             = 0x16C0;  //!< Van Ooijen Technische Informatica
 const uint16_t       USBProductId            = 0x05DF;  //!< Generic HID
-const uint16_t       USBProductRelease       = 0x1;
+const uint16_t       USBProductRelease       = 0x0001;
+const uint16_t       USBUsagePage            = 0xFFAB;  //!< Vendor specific. Only used in host, hardcoded by mbed.
+const uint16_t       USBUsageId              = 0x0200;  //!< Vendor specific. Only used in host, hardcoded by mbed.
 constexpr uint8_t    USBReportOutputLength   = sizeof(USBMessageTypes) + sizeof(LEDState);
 constexpr uint8_t    USBReportInputLength    = sizeof(USBMessageTypes) + sizeof(LEDState);

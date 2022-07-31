@@ -47,12 +47,17 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
     tray_icon->SetClickAction(bind_front(&App::OnTrayClick, this));
 }
 
-void winrt::LEDs::implementation::App::OnTrayClick(NotifyIcon::MouseButton button)
+fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
 {
     switch (button)
     {
     case NotifyIcon::MouseButton::Left:
     {
+        // TODO: move
+        led_device = make_unique<LEDDevice>(bind_front(&App::OnLEDDeviceChange, this));
+        co_await led_device->DiscoverDevice();
+        led_device->RequestLEDs();
+
         const auto main_window = window.as<MainWindow>();
         const auto app_window = main_window->GetAppWindow();
 
@@ -71,6 +76,7 @@ void winrt::LEDs::implementation::App::OnTrayClick(NotifyIcon::MouseButton butto
             icon_rect.right - window_size.Width,
             icon_rect.top - window_size.Height,
             });
+
         break;
     }
     case NotifyIcon::MouseButton::Right:
@@ -81,3 +87,10 @@ void winrt::LEDs::implementation::App::OnTrayClick(NotifyIcon::MouseButton butto
     }
 }
 
+fire_and_forget App::OnLEDDeviceChange(bool on, float warm, float cool)
+{
+    co_await wil::resume_foreground(window.DispatcherQueue());
+
+    // TODO move to window idl (as a delegate ?)
+    window.as<MainWindow>()->SetState(on, warm, cool);
+}

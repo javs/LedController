@@ -1,26 +1,41 @@
 #include "pch.h"
-#include "LEDDevice.h"
-#include <sstream>
+
 #include <limits>
+#include <stdexcept>
 
 #include <winrt/Windows.Devices.Enumeration.h>
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Streams.h>
 
+#include "LEDDevice.h"
+
+
+using namespace std;
 using namespace winrt;
 using namespace Windows::Devices::HumanInterfaceDevice;
 using namespace Windows::Devices::Enumeration;
 using namespace Windows::Storage;
 using namespace Windows::Storage::Streams;
+using namespace Windows::Foundation;
 
-fire_and_forget LEDDevice::DiscoverDevice()
+
+LEDDevice::LEDDevice(OnLEDStateChange handler)
+    : m_handler(move(handler))
 {
-    uint16_t vendorId = 0x16c0;
-    uint16_t productId = 0x05DF;
-    uint16_t usagePage = 0xFFAB;
-    uint16_t usageId = 0x0200;
+}
 
-    auto selector = HidDevice::GetDeviceSelector(usagePage, usageId, vendorId, productId);
+LEDDevice::~LEDDevice()
+{
+    if (m_device)
+    {
+        m_device.Close();
+        m_device = nullptr;
+    }
+}
+
+IAsyncAction LEDDevice::DiscoverDevice()
+{
+    auto selector = HidDevice::GetDeviceSelector(USBUsagePage, USBUsageId, USBVendorId, USBProductId);
 
     auto devices = co_await DeviceInformation::FindAllAsync(selector);
 
@@ -30,54 +45,73 @@ fire_and_forget LEDDevice::DiscoverDevice()
         m_device = co_await HidDevice::FromIdAsync(devices.GetAt(0).Id(), FileAccessMode::ReadWrite);
 
         if (m_device)
-        {
-            m_device.InputReportReceived([](HidDevice d, HidInputReportReceivedEventArgs a) {
-                std::wostringstream oss{};
-                oss << "Got Report with length: " << a.Report().Data().Length() << "\n";
-                //MessageBox(GetDesktopWindow(), oss.str().c_str(), L"", MB_OK);
-                });
-
-            auto report = m_device.CreateOutputReport();
-
-            DataWriter dataWriter;
-
-            dataWriter.ByteOrder(ByteOrder::LittleEndian);
-
-            // Report Id is always the first byte
-            dataWriter.WriteByte(report.Id());
-            dataWriter.WriteByte(1); // set
-            dataWriter.WriteByte(1); // on
-            dataWriter.WriteUInt16(0.45f * std::numeric_limits<uint16_t>::max()); // warm
-            dataWriter.WriteUInt16(0.20f * std::numeric_limits<uint16_t>::max()); // cold
-
-            report.Data(dataWriter.DetachBuffer());
-
-            auto inspect = report.Data().data();
-
-            auto response = co_await m_device.SendOutputReportAsync(report);
-            //// Input reports contain data from the device.
-            //device.InputReportReceived += async(sender, args) = >
-            //{
-            //    HidInputReport inputReport = args.Report;
-            //    IBuffer buffer = inputReport.Data;
-
-            //    // Create a DispatchedHandler as we are interracting with the UI directly and the
-            //    // thread that this function is running on might not be the UI thread; 
-            //    // if a non-UI thread modifies the UI, an exception is thrown.
-
-            //    await this.Dispatcher.RunAsync(
-            //        CoreDispatcherPriority.Normal,
-            //        new DispatchedHandler(() = >
-            //    {
-            //        info.Text += "\nHID Input Report: " + inputReport.ToString() +
-            //            "\nTotal number of bytes received: " + buffer.Length.ToString();
-            //    }));
-            //};
-        }
-
+            m_device.InputReportReceived({this, &LEDDevice::OnInputReportRecieved});
     }
-    else
-    {
-        MessageBox(GetDesktopWindow(), L"No USB devices found", L"", MB_OK);
-    }
+}
+
+void LEDDevice::SetLEDs(bool on, float warm, float cool)
+{
+    SendReport(USBMessageTypes::SetLEDState, on, warm, cool);
+}
+
+void LEDDevice::RequestLEDs()
+{
+    SendReport(USBMessageTypes::GetLEDState, true, 0.0f, 0.0f);
+}
+
+void LEDDevice::OnInputReportRecieved(
+    winrt::Windows::Devices::HumanInterfaceDevice::HidDevice,
+    winrt::Windows::Devices::HumanInterfaceDevice::HidInputReportReceivedEventArgs args)
+{
+    if (!m_handler)
+        return;
+
+    DataReader data_reader { DataReader::FromBuffer(args.Report().Data()) };
+
+    data_reader.ByteOrder(ByteOrder::LittleEndian);
+
+    auto id = data_reader.ReadByte();
+    auto msg = static_cast<USBMessageTypes>(data_reader.ReadByte());
+
+    LEDState state{};
+    array_view<uint8_t> state_view{ reinterpret_cast<uint8_t*>(&state), sizeof(state) };
+
+    data_reader.ReadBytes(state_view);
+
+    const auto warm = static_cast<float>(state.warm) / numeric_limits<RawLEDComponentType>::max();
+    const auto cool = static_cast<float>(state.cool) / numeric_limits<RawLEDComponentType>::max();
+
+    m_handler(state.on, warm, cool);
+ }
+
+fire_and_forget LEDDevice::SendReport(USBMessageTypes msg, bool on, float warm, float cool)
+{
+    if (!m_device)
+        throw runtime_error("No USB device discovered");
+
+    auto report = m_device.CreateOutputReport();
+
+    DataWriter dataWriter;
+
+    dataWriter.ByteOrder(ByteOrder::LittleEndian);
+
+    const LEDState state{
+        on,
+        static_cast<RawLEDComponentType>(warm * std::numeric_limits<RawLEDComponentType>::max()),
+        static_cast<RawLEDComponentType>(cool * std::numeric_limits<RawLEDComponentType>::max()),
+    };
+
+    array_view<const uint8_t> state_view{ reinterpret_cast<const uint8_t*>(&state), sizeof(state) };
+
+    // Report Id is always the first byte
+
+    dataWriter.WriteByte(report.Id());
+    dataWriter.WriteByte(static_cast<uint8_t>(msg));
+    dataWriter.WriteBytes(state_view);
+
+    report.Data(dataWriter.DetachBuffer());
+
+    auto inspect = report.Data().data();
+
+    auto response = co_await m_device.SendOutputReportAsync(report);
 }

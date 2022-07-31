@@ -1,13 +1,29 @@
 #pragma once
 
-#include <winrt/Windows.Devices.HumanInterfaceDevice.h>
+#include <functional>
 
-class LEDDevice
+#include "../../common/led_device.h"
+
+struct LEDDevice
 {
-	winrt::Windows::Devices::HumanInterfaceDevice::HidDevice m_device{nullptr};
+	using OnLEDStateChange = std::function<void(bool, float, float)>;
 
-public:
-	LEDDevice() = default;
-	winrt::fire_and_forget DiscoverDevice();
+	LEDDevice(OnLEDStateChange handler);
+	~LEDDevice();
+
+	winrt::Windows::Foundation::IAsyncAction DiscoverDevice();
+
+	void SetLEDs(bool on, float warm, float cool);
+	void RequestLEDs();
+
+private:
+	winrt::Windows::Devices::HumanInterfaceDevice::HidDevice m_device{ nullptr };
+	OnLEDStateChange m_handler {};
+
+	void OnInputReportRecieved(
+		winrt::Windows::Devices::HumanInterfaceDevice::HidDevice,
+		winrt::Windows::Devices::HumanInterfaceDevice::HidInputReportReceivedEventArgs);
+
+	winrt::fire_and_forget SendReport(USBMessageTypes msg, bool on, float warm, float cool);
 };
 

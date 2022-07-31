@@ -14,6 +14,8 @@ namespace winrt::LEDs::implementation
         void DPIAwareResizeClient(float height, float width);
 
         void Window_Activated(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
+
+        void SetState(bool on, float warm, float cool);
     };
 }
 
