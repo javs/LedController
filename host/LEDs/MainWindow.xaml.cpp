@@ -8,7 +8,9 @@
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <microsoft.ui.xaml.window.h>
 #include <wil/cppwinrt_helpers.h>
+#include <wil/resource.h>
 
+#include "undoc.h"
 
 using namespace std;
 using namespace winrt;
@@ -28,6 +30,29 @@ namespace winrt::LEDs::implementation
         presenter.IsResizable(false);
         presenter.IsMaximizable(false);
         presenter.SetBorderAndTitleBar(true, false);
+
+        wil::unique_hmodule lib_user32{ ::LoadLibraryEx(L"user32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32) };
+
+        FAIL_FAST_LAST_ERROR_IF_NULL(lib_user32);
+        
+        auto SetWindowCompositionAttribute = reinterpret_cast<PFN_SET_WINDOW_COMPOSITION_ATTRIBUTE>(::GetProcAddress(lib_user32.get(), "SetWindowCompositionAttribute"));
+        
+        FAIL_FAST_LAST_ERROR_IF(!SetWindowCompositionAttribute);
+
+        ACCENT_POLICY policy = {
+            ACCENT_ENABLE_ACRYLICBLURBEHIND,
+            2,
+            0x11111111,
+            0
+        };
+
+        const WINDOWCOMPOSITIONATTRIBDATA data = {
+            WCA_ACCENT_POLICY,
+            &policy,
+            sizeof(policy)
+        };
+
+        FAIL_FAST_IF_WIN32_BOOL_FALSE(SetWindowCompositionAttribute(GetHWND(), &data));
     }
     
     HWND MainWindow::GetHWND() const
