@@ -79,9 +79,54 @@ namespace winrt::LEDs::implementation
         }
     }
 
-    void MainWindow::SetState(bool on, float warm, float cool)
+    void MainWindow::SendLEDsStateChangedEvent()
     {
+        if (m_block_events)
+            return;
+
+        // TODO make a struct
+        // TODO fix on
+        m_LEDsStateChanged(
+            true,
+            warm_slider().Value() / 100.0f,
+            cool_slider().Value() / 100.0f,
+            auto_control().IsChecked().GetBoolean()
+        );
+    }
+
+    void MainWindow::SetState(bool on, float warm, float cool, bool automatic)
+    {
+        m_block_events = true;
+        // TODO fix on
         warm_slider().Value(warm * 100.0f);
         cool_slider().Value(cool * 100.0f);
+        auto_control().IsChecked(automatic);
+        m_block_events = false;
+    }
+
+    winrt::event_token MainWindow::LEDsStateChanged(LEDsStateChangedEventHandler const& handler)
+    {
+        return m_LEDsStateChanged.add(handler);
+    }
+
+    void MainWindow::LEDsStateChanged(winrt::event_token const& token) noexcept
+    {
+        m_LEDsStateChanged.remove(token);
+    }
+
+    void MainWindow::warm_slider_ValueChanged(IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const&)
+    {
+        SendLEDsStateChangedEvent();
+    }
+
+    void MainWindow::cool_slider_ValueChanged(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const&)
+    {
+        SendLEDsStateChangedEvent();
+    }
+
+    void MainWindow::auto_control_Changed(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    {
+        SendLEDsStateChangedEvent();
     }
 }
+

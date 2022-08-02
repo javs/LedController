@@ -10,12 +10,23 @@ namespace winrt::LEDs::implementation
 
         HWND GetHWND() const;
         winrt::Microsoft::UI::Windowing::AppWindow GetAppWindow();
-
         void DPIAwareResizeClient(float height, float width);
+        void SetState(bool on, float warm, float cool);
+        void SendLEDsStateChangedEvent();
 
         void Window_Activated(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs const& args);
+        void warm_slider_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
+        void cool_slider_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e);
+        void auto_control_Changed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
-        void SetState(bool on, float warm, float cool);
+        void SetState(bool on, float warm, float cool, bool automatic);
+
+        winrt::event_token LEDsStateChanged(winrt::LEDs::LEDsStateChangedEventHandler const& handler);
+        void LEDsStateChanged(winrt::event_token const& token) noexcept;
+
+    private:
+        winrt::event< winrt::LEDs::LEDsStateChangedEventHandler> m_LEDsStateChanged;
+        bool m_block_events {false};
     };
 }
 

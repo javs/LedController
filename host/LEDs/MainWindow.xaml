@@ -33,12 +33,12 @@
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Grid.Column="0" x:Name="warm" Text="Warm" VerticalAlignment="Center" />
-            <Slider Grid.Row="0" Grid.Column="1" x:Name="warm_slider" VerticalAlignment="Center" />
+            <Slider Grid.Row="0" Grid.Column="1" x:Name="warm_slider" VerticalAlignment="Center" ValueChanged="warm_slider_ValueChanged"/>
             <TextBlock Grid.Row="1" Grid.Column="0" x:Name="cool" Text="Cool" VerticalAlignment="Center"/>
-            <Slider Grid.Row="1" Grid.Column="1" x:Name="cool_slider" VerticalAlignment="Center"/>
+            <Slider Grid.Row="1" Grid.Column="1" x:Name="cool_slider" VerticalAlignment="Center" ValueChanged="cool_slider_ValueChanged"/>
         </Grid>
         
-        <CheckBox x:Name="AutoControl" HorizontalAlignment="Center">Automatic</CheckBox>
+        <CheckBox x:Name="auto_control" HorizontalAlignment="Center" Checked="auto_control_Changed">Automatic</CheckBox>
         
     </StackPanel>
 </Window>

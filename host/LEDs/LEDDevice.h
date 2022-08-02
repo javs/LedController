@@ -11,7 +11,7 @@ struct LEDDevice
 	LEDDevice(OnLEDStateChange handler);
 	~LEDDevice();
 
-	winrt::Windows::Foundation::IAsyncAction DiscoverDevice();
+	winrt::Windows::Foundation::IAsyncAction DiscoverDevice(bool refresh_state = true);
 
 	void SetLEDs(bool on, float warm, float cool);
 	void RequestLEDs();

@@ -1,8 +1,14 @@
 namespace LEDs
 {
+    delegate void LEDsStateChangedEventHandler(Boolean on, Single warm, Single cool, Boolean automatic);
+
     [default_interface]
     runtimeclass MainWindow : Microsoft.UI.Xaml.Window
     {
         MainWindow();
+
+        event LEDsStateChangedEventHandler LEDsStateChanged;
+
+        void SetState(Boolean on, Single warm, Single cool, Boolean automatic);
     }
 }

@@ -33,7 +33,7 @@ LEDDevice::~LEDDevice()
     }
 }
 
-IAsyncAction LEDDevice::DiscoverDevice()
+IAsyncAction LEDDevice::DiscoverDevice(bool refresh_state)
 {
     auto selector = HidDevice::GetDeviceSelector(USBUsagePage, USBUsageId, USBVendorId, USBProductId);
 
@@ -45,7 +45,12 @@ IAsyncAction LEDDevice::DiscoverDevice()
         m_device = co_await HidDevice::FromIdAsync(devices.GetAt(0).Id(), FileAccessMode::ReadWrite);
 
         if (m_device)
-            m_device.InputReportReceived({this, &LEDDevice::OnInputReportRecieved});
+        {
+            m_device.InputReportReceived({ this, &LEDDevice::OnInputReportRecieved });
+
+            if (refresh_state)
+                RequestLEDs();
+        }
     }
 }
 
@@ -81,7 +86,10 @@ void LEDDevice::OnInputReportRecieved(
     const auto warm = static_cast<float>(state.warm) / numeric_limits<RawLEDComponentType>::max();
     const auto cool = static_cast<float>(state.cool) / numeric_limits<RawLEDComponentType>::max();
 
-    m_handler(state.on, warm, cool);
+    // Block the set return code to avoid re-setting state
+    // TODO: handle failures to set?
+    if (msg != USBMessageTypes::SetLEDState)
+        m_handler(state.on, warm, cool);
  }
 
 fire_and_forget LEDDevice::SendReport(USBMessageTypes msg, bool on, float warm, float cool)

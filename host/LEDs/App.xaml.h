@@ -13,10 +13,10 @@ namespace winrt::LEDs::implementation
     {
         App();
 
-        void OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
+        fire_and_forget OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
         fire_and_forget OnLEDDeviceChange(bool on, float warm, float cool);
-
-        fire_and_forget OnTrayClick(NotifyIcon::MouseButton button);
+        void OnTrayClick(NotifyIcon::MouseButton button);
+        void OnUILEDsChanged(bool on, float warm, float cold, bool automatic);
 
     private:
 
