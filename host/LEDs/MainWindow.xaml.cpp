@@ -84,23 +84,22 @@ namespace winrt::LEDs::implementation
         if (m_block_events)
             return;
 
-        // TODO make a struct
-        // TODO fix on
+        // TODO make a struct ?
         m_LEDsStateChanged(
-            true,
+            on_off().IsOn(),
             warm_slider().Value() / 100.0f,
             cool_slider().Value() / 100.0f,
-            auto_control().IsChecked().GetBoolean()
+            auto_control().IsOn()
         );
     }
 
     void MainWindow::SetState(bool on, float warm, float cool, bool automatic)
     {
         m_block_events = true;
-        // TODO fix on
+        on_off().IsOn(on);
         warm_slider().Value(warm * 100.0f);
         cool_slider().Value(cool * 100.0f);
-        auto_control().IsChecked(automatic);
+        auto_control().IsOn(automatic);
         m_block_events = false;
     }
 
@@ -124,7 +123,12 @@ namespace winrt::LEDs::implementation
         SendLEDsStateChangedEvent();
     }
 
-    void MainWindow::auto_control_Changed(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    void MainWindow::auto_control_Toggled(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    {
+        SendLEDsStateChangedEvent();
+    }
+
+    void MainWindow::on_off_Toggled(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
     {
         SendLEDsStateChangedEvent();
     }
