@@ -49,28 +49,47 @@ IAsyncAction LEDDevice::DiscoverDevice(bool refresh_state)
             m_device.InputReportReceived({ this, &LEDDevice::OnInputReportRecieved });
 
             if (refresh_state)
-                RequestLEDs();
+            {
+                co_await RequestLEDs();
+                co_await 1s; // Change for awaiting the confirmation msg
+            }
         }
     }
 }
 
-void LEDDevice::SetLEDs(bool on, float warm, float cool)
+IAsyncAction LEDDevice::SetLEDs(bool on, float warm, float cool)
 {
-    SendReport(USBMessageTypes::SetLEDState, on, warm, cool);
+    const LEDState state{
+        on,
+        static_cast<RawLEDComponentType>(warm * std::numeric_limits<RawLEDComponentType>::max()),
+        static_cast<RawLEDComponentType>(cool * std::numeric_limits<RawLEDComponentType>::max()),
+    };
+
+    co_await SendReport(USBMessageTypes::SetLEDState, state);
 }
 
-void LEDDevice::RequestLEDs()
+winrt::Windows::Foundation::IAsyncAction LEDDevice::SetLEDs(const LEDState& state)
 {
-    SendReport(USBMessageTypes::GetLEDState, true, 0.0f, 0.0f);
+    co_await SendReport(USBMessageTypes::SetLEDState, state);
+}
+
+IAsyncAction LEDDevice::RequestLEDs()
+{
+    // state is ignored for get
+    co_await SendReport(USBMessageTypes::GetLEDState, {});
+}
+
+IAsyncAction LEDDevice::SetOn(bool on)
+{
+    auto state { m_last };
+    state.on = on;
+    co_await SetLEDs(state);
 }
 
 void LEDDevice::OnInputReportRecieved(
     winrt::Windows::Devices::HumanInterfaceDevice::HidDevice,
     winrt::Windows::Devices::HumanInterfaceDevice::HidInputReportReceivedEventArgs args)
 {
-    if (!m_handler)
-        return;
-
     DataReader data_reader { DataReader::FromBuffer(args.Report().Data()) };
 
     data_reader.ByteOrder(ByteOrder::LittleEndian);
@@ -78,21 +97,21 @@ void LEDDevice::OnInputReportRecieved(
     auto id = data_reader.ReadByte();
     auto msg = static_cast<USBMessageTypes>(data_reader.ReadByte());
 
-    LEDState state{};
-    array_view<uint8_t> state_view{ reinterpret_cast<uint8_t*>(&state), sizeof(state) };
+    array_view<uint8_t> state_view{ reinterpret_cast<uint8_t*>(&m_last), sizeof(m_last) };
 
     data_reader.ReadBytes(state_view);
 
-    const auto warm = static_cast<float>(state.warm) / numeric_limits<RawLEDComponentType>::max();
-    const auto cool = static_cast<float>(state.cool) / numeric_limits<RawLEDComponentType>::max();
+    // Convert to float 0-1 rates
+    const auto warm = static_cast<float>(m_last.warm) / numeric_limits<RawLEDComponentType>::max();
+    const auto cool = static_cast<float>(m_last.cool) / numeric_limits<RawLEDComponentType>::max();
 
     // Block the set return code to avoid re-setting state
     // TODO: handle failures to set?
-    if (msg != USBMessageTypes::SetLEDState)
-        m_handler(state.on, warm, cool);
+    if (m_handler && msg != USBMessageTypes::SetLEDState)
+        m_handler(m_last.on, warm, cool);
  }
 
-fire_and_forget LEDDevice::SendReport(USBMessageTypes msg, bool on, float warm, float cool)
+IAsyncAction LEDDevice::SendReport(USBMessageTypes msg, const LEDState& state)
 {
     if (!m_device)
         throw runtime_error("No USB device discovered");
@@ -102,12 +121,6 @@ fire_and_forget LEDDevice::SendReport(USBMessageTypes msg, bool on, float warm, 
     DataWriter dataWriter;
 
     dataWriter.ByteOrder(ByteOrder::LittleEndian);
-
-    const LEDState state{
-        on,
-        static_cast<RawLEDComponentType>(warm * std::numeric_limits<RawLEDComponentType>::max()),
-        static_cast<RawLEDComponentType>(cool * std::numeric_limits<RawLEDComponentType>::max()),
-    };
 
     array_view<const uint8_t> state_view{ reinterpret_cast<const uint8_t*>(&state), sizeof(state) };
 

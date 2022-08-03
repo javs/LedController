@@ -14,10 +14,11 @@ namespace winrt::LEDs::implementation
         static const wchar_t* TrayIconPath;
         App();
 
-        fire_and_forget OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
+        winrt::Windows::Foundation::IAsyncAction OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
         fire_and_forget OnLEDDeviceChange(bool on, float warm, float cool);
-        void OnTrayClick(NotifyIcon::MouseButton button);
-        void OnUILEDsChanged(bool on, float warm, float cold, bool automatic);
+        fire_and_forget OnTrayClick(NotifyIcon::MouseButton button);
+        fire_and_forget OnUILEDsChanged(bool on, float warm, float cold, bool automatic);
+        LRESULT TrayMessageHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
     private:
 

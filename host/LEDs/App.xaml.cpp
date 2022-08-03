@@ -37,7 +37,7 @@ App::App()
 #endif
 }
 
-fire_and_forget App::OnLaunched(LaunchActivatedEventArgs const&)
+IAsyncAction App::OnLaunched(LaunchActivatedEventArgs const&)
 {
     const auto module_handle = ::GetModuleHandle(nullptr);
     
@@ -49,7 +49,7 @@ fire_and_forget App::OnLaunched(LaunchActivatedEventArgs const&)
             0, 0,
             LR_LOADFROMFILE)));
 
-    THROW_LAST_ERROR_IF_NULL_MSG(icon, "Failed to load app icon %s", TrayIconPath);
+    THROW_LAST_ERROR_IF_NULL_MSG(icon, "Failed to load app icon %S", TrayIconPath);
 
     tray_icon = std::make_unique<NotifyIcon>(
         module_handle,
@@ -64,15 +64,20 @@ fire_and_forget App::OnLaunched(LaunchActivatedEventArgs const&)
 
     led_device = make_unique<LEDDevice>(bind_front(&App::OnLEDDeviceChange, this));
     co_await led_device->DiscoverDevice();
+
+    // Hijack the tray icon hwnd for getting these events
+    ::RegisterPowerSettingNotification(tray_icon->GetHWND(), &GUID_SESSION_USER_PRESENCE, DEVICE_NOTIFY_WINDOW_HANDLE);
+    //::RegisterPowerSettingNotification(_hWnd, &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
+    tray_icon->AddMessageHandler(bind_front(&App::TrayMessageHandler, this));
 }
 
-void App::OnTrayClick(NotifyIcon::MouseButton button)
+fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
 {
     switch (button)
     {
     case NotifyIcon::MouseButton::Left:
     {
-        led_device->RequestLEDs();
+        co_await led_device->RequestLEDs();
 
         // TODO: rework this block
         const auto main_window = window.as<MainWindow>();
@@ -104,9 +109,9 @@ void App::OnTrayClick(NotifyIcon::MouseButton button)
     }
 }
 
-void App::OnUILEDsChanged(bool on, float warm, float cold, bool automatic)
+fire_and_forget App::OnUILEDsChanged(bool on, float warm, float cold, bool automatic)
 {
-    led_device->SetLEDs(on, warm, cold);
+    co_await led_device->SetLEDs(on, warm, cold);
 }
 
 fire_and_forget App::OnLEDDeviceChange(bool on, float warm, float cool)
@@ -114,4 +119,40 @@ fire_and_forget App::OnLEDDeviceChange(bool on, float warm, float cool)
     co_await wil::resume_foreground(window.DispatcherQueue());
 
     window.SetState(on, warm, cool, false);
+}
+
+LRESULT App::TrayMessageHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg)
+    {
+    case WM_POWERBROADCAST:
+        switch (wParam)
+        {
+        case PBT_APMRESUMESUSPEND:
+            led_device->SetOn(true);
+            return 0;
+        case PBT_APMSUSPEND:
+            led_device->SetOn(false);
+            return 0;
+        case PBT_POWERSETTINGCHANGE:
+        {
+            auto info = reinterpret_cast<POWERBROADCAST_SETTING*>(lParam);
+            if (info->PowerSetting == GUID_SESSION_USER_PRESENCE)
+            {
+                if (info->Data[0] == 0)     // present
+                {
+                    led_device->SetOn(true);
+                    return 0;
+                }
+                else if (info->Data[0] == 2)   // not present
+                {
+                    led_device->SetOn(false);
+                    return 0;
+                }
+            }
+        }
+        }
+    }
+
+    return 0;
 }
