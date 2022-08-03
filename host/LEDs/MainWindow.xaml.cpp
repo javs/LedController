@@ -4,6 +4,9 @@
 #include "MainWindow.g.cpp"
 #endif
 
+#pragma comment(lib, "Dwmapi.lib")
+#include <dwmapi.h>
+
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <microsoft.ui.xaml.window.h>
@@ -27,6 +30,16 @@ namespace winrt::LEDs::implementation
         presenter.IsResizable(false);
         presenter.IsMaximizable(false);
         presenter.SetBorderAndTitleBar(true, false);
+
+        const auto hwnd = GetHWND();
+
+        // Do not show up in taskbar
+        ::SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
+        
+        // https://github.com/mintty/mintty/pull/984/files
+        //BOOL dark = true;
+        //if (::DwmSetWindowAttribute(hwnd, 20 /* DWMWA_USE_IMMERSIVE_DARK_MODE */, &dark, sizeof dark))
+        //    ::DwmSetWindowAttribute(hwnd, 19 /* ?? */, &dark, sizeof dark);
     }
     
     HWND MainWindow::GetHWND() const

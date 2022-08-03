@@ -8,40 +8,44 @@
     mc:Ignorable="d"
     Activated="Window_Activated">
 
-    <StackPanel
-        Padding="8"
+    <Border
+        BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
         Width="Auto" HorizontalAlignment="Center"
         Height="Auto" VerticalAlignment="Center"
-        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
         >
-        
-        <!--<StackPanel.Background>
-            <AcrylicBrush TintColor="Gray"/>
-        </StackPanel.Background>-->
+        <StackPanel
+            Padding="8"
+            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+            >
 
-        <TextBlock FontWeight="Bold" Text="Monitor LEDs"/>
-        
-        <Grid ColumnSpacing="10" RowSpacing="5" >
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width = "Auto" />
-                <ColumnDefinition Width = "300" />
-            </Grid.ColumnDefinitions>
+            <!--<StackPanel.Background>
+                <AcrylicBrush TintColor="Gray"/>
+            </StackPanel.Background>-->
 
-            <Grid.RowDefinitions>
-                <RowDefinition Height = "Auto" />
-                <RowDefinition Height = "Auto" />
-            </Grid.RowDefinitions>
+            <TextBlock FontWeight="Bold" Text="Monitor LEDs"/>
 
-            <TextBlock Grid.Row="0" Grid.Column="0" x:Name="warm" Text="Warm" VerticalAlignment="Center" />
-            <Slider Grid.Row="0" Grid.Column="1" x:Name="warm_slider" VerticalAlignment="Center" ValueChanged="warm_slider_ValueChanged"/>
-            <TextBlock Grid.Row="1" Grid.Column="0" x:Name="cool" Text="Cool" VerticalAlignment="Center"/>
-            <Slider Grid.Row="1" Grid.Column="1" x:Name="cool_slider" VerticalAlignment="Center" ValueChanged="cool_slider_ValueChanged"/>
-        </Grid>
+            <Grid ColumnSpacing="10" RowSpacing="5" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width = "Auto" />
+                    <ColumnDefinition Width = "300" />
+                </Grid.ColumnDefinitions>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <ToggleSwitch x:Name="on_off" HorizontalAlignment="Center" Toggled="on_off_Toggled"/>
-            <ToggleSwitch x:Name="auto_control" HorizontalAlignment="Center" Toggled="auto_control_Toggled" OnContent="Auto" OffContent="Manual"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height = "Auto" />
+                    <RowDefinition Height = "Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" x:Name="warm" Text="Warm" VerticalAlignment="Center" />
+                <Slider Grid.Row="0" Grid.Column="1" x:Name="warm_slider" VerticalAlignment="Center" ValueChanged="warm_slider_ValueChanged"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" x:Name="cool" Text="Cool" VerticalAlignment="Center"/>
+                <Slider Grid.Row="1" Grid.Column="1" x:Name="cool_slider" VerticalAlignment="Center" ValueChanged="cool_slider_ValueChanged"/>
+            </Grid>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <ToggleSwitch x:Name="on_off" HorizontalAlignment="Center" Toggled="on_off_Toggled"/>
+                <ToggleSwitch x:Name="auto_control" HorizontalAlignment="Right" Toggled="auto_control_Toggled" OnContent="Auto" OffContent="Manual"/>
+            </StackPanel>
+
         </StackPanel>
-
-    </StackPanel>
+    </Border>
 </Window>

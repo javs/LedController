@@ -19,6 +19,8 @@ using namespace LEDs;
 using namespace LEDs::implementation;
 
 
+const wchar_t* App::TrayIconPath = L"Assets/dark.ico";
+
 App::App()
 {
     InitializeComponent();
@@ -37,9 +39,21 @@ App::App()
 
 fire_and_forget App::OnLaunched(LaunchActivatedEventArgs const&)
 {
+    const auto module_handle = ::GetModuleHandle(nullptr);
+    
+    icon.reset(reinterpret_cast<HICON>(
+        ::LoadImage(
+            module_handle,
+            TrayIconPath,
+            IMAGE_ICON,
+            0, 0,
+            LR_LOADFROMFILE)));
+
+    THROW_LAST_ERROR_IF_NULL_MSG(icon, "Failed to load app icon %s", TrayIconPath);
+
     tray_icon = std::make_unique<NotifyIcon>(
-        ::GetModuleHandle(nullptr),
-        LoadIcon(NULL, IDI_EXCLAMATION),
+        module_handle,
+        icon.get(),
         L"LEDs");
 
     window = make<MainWindow>();
@@ -76,8 +90,8 @@ void App::OnTrayClick(NotifyIcon::MouseButton button)
         const auto window_size = app_window.ClientSize();
 
         app_window.Move({
-            icon_rect.right - window_size.Width,
-            icon_rect.top - window_size.Height,
+            icon_rect.left + (icon_rect.right - icon_rect.left) / 2 - window_size.Width / 2,
+            icon_rect.top - window_size.Height - 40,
             });
 
         break;
