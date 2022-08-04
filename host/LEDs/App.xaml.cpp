@@ -66,8 +66,7 @@ IAsyncAction App::OnLaunched(LaunchActivatedEventArgs const&)
     co_await led_device->DiscoverDevice();
 
     // Hijack the tray icon hwnd for getting these events
-    ::RegisterPowerSettingNotification(tray_icon->GetHWND(), &GUID_SESSION_USER_PRESENCE, DEVICE_NOTIFY_WINDOW_HANDLE);
-    //::RegisterPowerSettingNotification(_hWnd, &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
+    ::RegisterPowerSettingNotification(tray_icon->GetHWND(), &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
     tray_icon->AddMessageHandler(bind_front(&App::TrayMessageHandler, this));
 }
 
@@ -137,16 +136,16 @@ LRESULT App::TrayMessageHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam)
         case PBT_POWERSETTINGCHANGE:
         {
             auto info = reinterpret_cast<POWERBROADCAST_SETTING*>(lParam);
-            if (info->PowerSetting == GUID_SESSION_USER_PRESENCE)
+            if (info->PowerSetting == GUID_MONITOR_POWER_ON)
             {
-                if (info->Data[0] == 0)     // present
-                {
-                    led_device->SetOn(true);
-                    return 0;
-                }
-                else if (info->Data[0] == 2)   // not present
+                if (info->Data[0] == 0)         // off
                 {
                     led_device->SetOn(false);
+                    return 0;
+                }
+                else if (info->Data[0] == 1)    // on
+                {
+                    led_device->SetOn(true);
                     return 0;
                 }
             }
