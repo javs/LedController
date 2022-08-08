@@ -102,6 +102,10 @@ fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
     }
     case NotifyIcon::MouseButton::Right:
         window.Close();
+
+        // Release these manually as app never destroys
+        tray_icon.reset();
+        led_device.reset();
         break;
     default:
         break;
