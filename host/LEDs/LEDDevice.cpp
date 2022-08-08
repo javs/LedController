@@ -132,7 +132,5 @@ IAsyncAction LEDDevice::SendReport(USBMessageTypes msg, const LEDState& state)
 
     report.Data(dataWriter.DetachBuffer());
 
-    auto inspect = report.Data().data();
-
     auto response = co_await m_device.SendOutputReportAsync(report);
 }

@@ -16,6 +16,7 @@ using namespace std;
 using namespace winrt;
 using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Windowing;
+using namespace winrt::Windows::Foundation;
 
 
 namespace winrt::LEDs::implementation
@@ -100,8 +101,8 @@ namespace winrt::LEDs::implementation
         // TODO make a struct ?
         m_LEDsStateChanged(
             on_off().IsOn(),
-            warm_slider().Value() / 100.0f,
-            cool_slider().Value() / 100.0f,
+            static_cast<float>(warm_slider().Value()) / 100.0f,
+            static_cast<float>(cool_slider().Value()) / 100.0f,
             auto_control().IsOn()
         );
     }
@@ -131,7 +132,7 @@ namespace winrt::LEDs::implementation
         SendLEDsStateChangedEvent();
     }
 
-    void MainWindow::cool_slider_ValueChanged(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const&)
+    void MainWindow::cool_slider_ValueChanged(IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const&)
     {
         SendLEDsStateChangedEvent();
     }
@@ -141,7 +142,7 @@ namespace winrt::LEDs::implementation
         SendLEDsStateChangedEvent();
     }
 
-    void MainWindow::on_off_Toggled(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e)
+    void MainWindow::on_off_Toggled(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
         SendLEDsStateChangedEvent();
     }
