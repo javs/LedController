@@ -14,12 +14,18 @@
     <ClCompile Include="LEDDevice.cpp">
       <Filter>Device</Filter>
     </ClCompile>
+    <ClCompile Include="LEDCurve.cpp">
+      <Filter>Device</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Framework</Filter>
     </ClInclude>
     <ClInclude Include="LEDDevice.h">
+      <Filter>Device</Filter>
+    </ClInclude>
+    <ClInclude Include="LEDCurve.h">
       <Filter>Device</Filter>
     </ClInclude>
   </ItemGroup>
