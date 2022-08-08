@@ -15,6 +15,7 @@ using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Microsoft::UI::Xaml::Navigation;
 using namespace winrt::Microsoft::UI::Windowing;
+using namespace winrt::Microsoft::Windows::System::Power;
 using namespace LEDs;
 using namespace LEDs::implementation;
 
@@ -65,9 +66,8 @@ IAsyncAction App::OnLaunched(LaunchActivatedEventArgs const&)
     led_device = make_unique<LEDDevice>(bind_front(&App::OnLEDDeviceChange, this));
     co_await led_device->DiscoverDevice();
 
-    // Hijack the tray icon hwnd for getting these events
-    ::RegisterPowerSettingNotification(tray_icon->GetHWND(), &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
-    tray_icon->AddMessageHandler(bind_front(&App::TrayMessageHandler, this));
+    display_status_revoker = PowerManager::DisplayStatusChanged(auto_revoke, { this, &App::OnDisplayStatusChanged });
+    system_suspend_status_revoker = PowerManager::SystemSuspendStatusChanged(auto_revoke, { this, &App::OnSystemSuspendStatusChanged });
 }
 
 fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
@@ -124,38 +124,23 @@ fire_and_forget App::OnLEDDeviceChange(bool on, float warm, float cool)
     window.SetState(on, warm, cool, false);
 }
 
-LRESULT App::TrayMessageHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam)
+void App::OnDisplayStatusChanged(IInspectable const&, IInspectable const&)
 {
-    switch (msg)
-    {
-    case WM_POWERBROADCAST:
-        switch (wParam)
-        {
-        case PBT_APMRESUMESUSPEND:
-            led_device->SetOn(true);
-            return 0;
-        case PBT_APMSUSPEND:
-            led_device->SetOn(false);
-            return 0;
-        case PBT_POWERSETTINGCHANGE:
-        {
-            auto info = reinterpret_cast<POWERBROADCAST_SETTING*>(lParam);
-            if (info->PowerSetting == GUID_MONITOR_POWER_ON)
-            {
-                if (info->Data[0] == 0)         // off
-                {
-                    led_device->SetOn(false);
-                    return 0;
-                }
-                else if (info->Data[0] == 1)    // on
-                {
-                    led_device->SetOn(true);
-                    return 0;
-                }
-            }
-        }
-        }
-    }
+    const auto status = PowerManager::DisplayStatus();
 
-    return 0;
+    if (status == DisplayStatus::Off)
+        led_device->SetOn(false);
+    else if (status == DisplayStatus::On)
+        led_device->SetOn(true);
 }
+
+void App::OnSystemSuspendStatusChanged(IInspectable const&, IInspectable const&)
+{
+    const auto status = PowerManager::SystemSuspendStatus();
+
+    if (status == SystemSuspendStatus::ManualResume)
+        led_device->SetOn(true);
+    else if (status == SystemSuspendStatus::Entering)
+        led_device->SetOn(false);
+}
+

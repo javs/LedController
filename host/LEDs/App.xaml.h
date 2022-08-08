@@ -20,11 +20,23 @@ namespace winrt::LEDs::implementation
         fire_and_forget OnUILEDsChanged(bool on, float warm, float cold, bool automatic);
         LRESULT TrayMessageHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+        void OnSystemSuspendStatusChanged(
+            winrt::Windows::Foundation::IInspectable const& sender,
+            winrt::Windows::Foundation::IInspectable const& args);
+        void OnDisplayStatusChanged(
+            winrt::Windows::Foundation::IInspectable const& sender,
+            winrt::Windows::Foundation::IInspectable const& args);
+
     private:
 
         wil::unique_hicon icon{};
         winrt::LEDs::MainWindow window {nullptr};
         std::unique_ptr<NotifyIcon> tray_icon {};
         std::unique_ptr<LEDDevice> led_device {};
+
+        winrt::Microsoft::Windows::System::Power::PowerManager::DisplayStatusChanged_revoker
+            display_status_revoker{};
+        winrt::Microsoft::Windows::System::Power::PowerManager::SystemSuspendStatusChanged_revoker
+            system_suspend_status_revoker{};
     };
 }
