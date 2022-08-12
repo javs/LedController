@@ -37,7 +37,7 @@ App::App()
 #endif
 }
 
-IAsyncAction App::OnLaunched(LaunchActivatedEventArgs const&)
+fire_and_forget App::OnLaunched(LaunchActivatedEventArgs const&)
 {
     const auto module_handle = ::GetModuleHandle(nullptr);
     
