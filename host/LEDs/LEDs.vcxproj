@@ -152,12 +152,10 @@
       </Message>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">lib /NOLOGO /OUT:"$(OutDir)$(AssemblyName).lib" "$(IntDirFullPath)*.obj"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Generating lib version (unit test)</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
