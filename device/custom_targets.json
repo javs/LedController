@@ -1,0 +1,5 @@
+{
+    "NUCLEO_F303RE_LEDSTRIP": {
+        "inherits": ["NUCLEO_F303RE"],
+    }
+}
