@@ -60,6 +60,7 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "mstd_atomic": "c",
-        "queue": "c"
+        "queue": "c",
+        "mstd_cstddef": "cpp"
     }
 }

@@ -7,7 +7,8 @@
 
 /*!
  * Exposes a USB HID device to the host.
- * \note For STM32F3, uses PA_11 USB_DM / PA_12 USB_DP
+ * \note For STM32F3, PA_11 USB_DM / PA_12 USB_DP.
+ * \note Using USB Full Speed (D+ board pullup).
  */
 class USBLEDDevice : public USBHID
 {
