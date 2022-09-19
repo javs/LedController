@@ -17,8 +17,8 @@ class LEDController : public ILEDController
     //! The sum of percentages of each component that is the lower threshold for high power.
     static const float HighPowerPercentageTotal;
 
-    LEDComponent m_Cool {D3 /*PB_3*/};
-    LEDComponent m_Warm {D4 /*PB_5*/};
+    LEDComponent m_Cool;
+    LEDComponent m_Warm;
     mbed::InterruptIn m_Button {BUTTON1};
     int m_LimitsTimer {0};
 
@@ -31,7 +31,7 @@ class LEDController : public ILEDController
     bool InHighPower();
 
 public:
-    LEDController();
+    LEDController(PinName cool_pin, PinName warm_pin);
 
     void ToggleOn();
 

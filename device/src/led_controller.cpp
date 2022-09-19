@@ -10,7 +10,9 @@ const std::chrono::milliseconds LEDController::HighPowerTimeLimit           = 5m
 const float                     LEDController::HighPowerPercentageTotal     = 120.0f;
 
 
-LEDController::LEDController()
+LEDController::LEDController(PinName cool_pin, PinName warm_pin)
+    : m_Cool(cool_pin)
+    , m_Warm(warm_pin)
 {
     m_Button.rise([this](){
         auto queue = mbed::mbed_event_queue();

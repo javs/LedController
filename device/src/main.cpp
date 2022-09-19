@@ -18,7 +18,7 @@ int main()
 
     Settings::get().PrintDiags();
 
-    LEDController controller;
+    LEDController controller { PA_1, PA_4 };
 
     // Blocks until host connection completes
     USBLEDDevice usb {controller};
