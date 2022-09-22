@@ -18,7 +18,8 @@ int main()
 
     Settings::get().PrintDiags();
 
-    LEDController controller { A3, A4 };
+    // Both pins are on the same timer by default, use the alt mode of one
+    LEDController controller { PC_1, PB_0_ALT0 };
 
     // Blocks until host connection completes
     USBLEDDevice usb {controller};
