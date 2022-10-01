@@ -37,7 +37,7 @@ App::App()
 #endif
 }
 
-fire_and_forget App::OnLaunched(LaunchActivatedEventArgs const&)
+void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
     const auto module_handle = ::GetModuleHandle(nullptr);
     
@@ -57,13 +57,14 @@ fire_and_forget App::OnLaunched(LaunchActivatedEventArgs const&)
         L"LEDs");
 
     window = make<MainWindow>();
-
     window.LEDsStateChanged({ this, &App::OnUILEDsChanged });
-
+    
     tray_icon->SetClickAction(bind_front(&App::OnTrayClick, this));
 
-    led_device = make_unique<LEDDevice>(bind_front(&App::OnLEDDeviceChange, this));
-    co_await led_device->DiscoverDevice();
+    led_device = make_unique<LEDDevice>(window.DispatcherQueue());
+    led_device->OnConnected({ this, &App::OnLEDDeviceConnected });
+    led_device->OnStateChanged({ this, &App::OnLEDDeviceChanged });
+    led_device->DiscoverDevice();
 
     // Hijack the tray icon hwnd for getting these events
     ::RegisterPowerSettingNotification(tray_icon->GetHWND(), &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
@@ -76,6 +77,7 @@ fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
     {
     case NotifyIcon::MouseButton::Left:
     {
+        // TODO: use return value
         co_await led_device->RequestLEDs();
 
         // TODO: rework this block
@@ -117,7 +119,11 @@ fire_and_forget App::OnUILEDsChanged(bool on, float warm, float cold, bool autom
     co_await led_device->SetLEDs(on, warm, cold);
 }
 
-fire_and_forget App::OnLEDDeviceChange(bool on, float warm, float cool)
+void App::OnLEDDeviceConnected(bool on)
+{
+}
+
+fire_and_forget App::OnLEDDeviceChanged(bool on, float warm, float cool)
 {
     co_await wil::resume_foreground(window.DispatcherQueue());
 
