@@ -13,10 +13,6 @@
 class USBLEDDevice : public USBHID
 {
 public:
-    /**
-     * \param get_handler a handler that must return back the current state.
-     * \param set_handler a handler that must set the state passed as argument.
-     */
     USBLEDDevice(ILEDController& controller);
     
     ~USBLEDDevice();
