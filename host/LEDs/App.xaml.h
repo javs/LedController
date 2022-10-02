@@ -28,6 +28,6 @@ namespace winrt::LEDs::implementation
         wil::unique_hicon icon{};
         winrt::LEDs::MainWindow window {nullptr};
         std::unique_ptr<NotifyIcon> tray_icon {};
-        std::unique_ptr<LEDDevice> led_device {};
+        winrt::com_ptr<LEDDevice> led_device {};
     };
 }

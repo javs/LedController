@@ -2,8 +2,9 @@
 
 #include "../../common/led_device.h"
 
-struct LEDDevice
+struct LEDDevice : winrt::implements<LEDDevice, winrt::Windows::Foundation::IClosable>
 {
+	//! \param dispatcher pass the main window dispatcher
 	explicit LEDDevice(winrt::Microsoft::UI::Dispatching::DispatcherQueue dispatcher);
 	~LEDDevice();
 
@@ -51,4 +52,3 @@ private:
 
 	winrt::Windows::Foundation::IAsyncOperation<bool> SendReport(USBMessageTypes msg, const LEDState& state);
 };
-

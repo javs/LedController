@@ -77,6 +77,8 @@ void LEDDevice::Close()
 
 fire_and_forget LEDDevice::OnDeviceAdded(DeviceWatcher sender, DeviceInformation deviceInterface)
 {
+    auto strong_self { get_strong() };
+
     // Go back to foreground to sync and for FromIdAsync to get permissions
     co_await wil::resume_foreground(m_dispatcher);
     
@@ -113,6 +115,8 @@ fire_and_forget LEDDevice::OnDeviceAdded(DeviceWatcher sender, DeviceInformation
 
 fire_and_forget LEDDevice::OnDeviceRemoved(DeviceWatcher sender, DeviceInformationUpdate deviceUpdate)
 {
+    auto strong_self{ get_strong() };
+
     // Go back to foreground to sync
     co_await wil::resume_foreground(m_dispatcher);
 
@@ -157,6 +161,8 @@ IAsyncAction LEDDevice::SetOn(bool on)
 
 fire_and_forget LEDDevice::OnInputReportRecieved(HidDevice, HidInputReportReceivedEventArgs args)
 {
+    auto strong_self{ get_strong() };
+
     // Go back to foreground to sync
     co_await wil::resume_foreground(m_dispatcher);
 
@@ -204,6 +210,8 @@ IAsyncOperation<bool> LEDDevice::SendReport(USBMessageTypes msg, const LEDState&
     dataWriter.WriteBytes(state_view);
 
     report.Data(dataWriter.DetachBuffer());
+
+    auto strong_self{ get_strong() };
     
     auto response = co_await m_device.SendOutputReportAsync(report);
 

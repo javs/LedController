@@ -61,7 +61,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
     
     tray_icon->SetClickAction(bind_front(&App::OnTrayClick, this));
 
-    led_device = make_unique<LEDDevice>(window.DispatcherQueue());
+    led_device = make_self<LEDDevice>(window.DispatcherQueue());
     led_device->OnConnected({ this, &App::OnLEDDeviceConnected });
     led_device->OnStateChanged({ this, &App::OnLEDDeviceChanged });
     led_device->DiscoverDevice();
@@ -107,7 +107,7 @@ fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
 
         // Release these manually as app never destroys
         tray_icon.reset();
-        led_device.reset();
+        led_device = nullptr;
         break;
     default:
         break;
