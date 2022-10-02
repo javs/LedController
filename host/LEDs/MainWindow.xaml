@@ -9,7 +9,7 @@
     Activated="Window_Activated">
 
     <Border
-        BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
+        BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}" BorderThickness="1"
         Width="Auto" HorizontalAlignment="Center"
         Height="Auto" VerticalAlignment="Center"
         >
