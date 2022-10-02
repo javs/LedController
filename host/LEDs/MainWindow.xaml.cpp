@@ -42,6 +42,25 @@ namespace winrt::LEDs::implementation
         //if (::DwmSetWindowAttribute(hwnd, 20 /* DWMWA_USE_IMMERSIVE_DARK_MODE */, &dark, sizeof dark))
         //    ::DwmSetWindowAttribute(hwnd, 19 /* ?? */, &dark, sizeof dark);
     }
+
+    void MainWindow::Show()
+    {
+        // Show first so window layout is calculated (Content().UpdateLayout() doesnt work)
+        Activate();
+
+        const auto app_window = GetAppWindow();
+        const auto work_area = DisplayArea::Primary().WorkArea();
+        const auto window_size = app_window.ClientSize();
+        constexpr auto Margin = 10; // px
+
+        app_window.Move({
+            work_area.Width - window_size.Width - Margin,
+            work_area.Height - window_size.Height - Margin,
+            });
+
+        // Activate only sets focus the first time, ensure it is always set
+        SetForegroundWindow(GetHWND());
+    }
     
     HWND MainWindow::GetHWND() const
     {

@@ -80,25 +80,7 @@ fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
         // TODO: use return value
         co_await led_device->RequestLEDs();
 
-        // TODO: rework this block
-        const auto main_window = window.as<MainWindow>();
-        const auto app_window = main_window->GetAppWindow();
-
-        RECT icon_rect{};
-        tray_icon->GetNotifyIconRect(icon_rect);
-
-        // Show first so window layout is calculated (window.Content().UpdateLayout() doesnt work)
-        app_window.Show(true);
-
-        // Activate only works the first time, ensure the focus is always set
-        SetForegroundWindow(main_window->GetHWND());
-            
-        const auto window_size = app_window.ClientSize();
-
-        app_window.Move({
-            icon_rect.left + (icon_rect.right - icon_rect.left) / 2 - window_size.Width / 2,
-            icon_rect.top - window_size.Height - 40,
-            });
+        window.Show();
 
         break;
     }

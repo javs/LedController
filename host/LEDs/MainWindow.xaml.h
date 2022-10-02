@@ -8,6 +8,8 @@ namespace winrt::LEDs::implementation
     {
         MainWindow();
 
+        void Show();
+
         HWND GetHWND() const;
         winrt::Microsoft::UI::Windowing::AppWindow GetAppWindow();
         void DPIAwareResizeClient(float height, float width);
