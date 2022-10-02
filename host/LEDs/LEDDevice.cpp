@@ -186,8 +186,6 @@ fire_and_forget LEDDevice::OnInputReportRecieved(HidDevice, HidInputReportReceiv
     // TODO: handle failures to set?
     if (m_changed_handler && msg != USBMessageTypes::SetLEDState)
         m_changed_handler(m_last.on, warm, cool);
-
-    co_return;
  }
 
 IAsyncOperation<bool> LEDDevice::SendReport(USBMessageTypes msg, const LEDState& state)
