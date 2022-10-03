@@ -110,7 +110,6 @@ fire_and_forget LEDDevice::OnDeviceAdded(DeviceWatcher sender, DeviceInformation
 
     // refresh current state
     co_await RequestLEDs();
-    co_await 1s; // Change for awaiting the confirmation msg, with a future?
 }
 
 fire_and_forget LEDDevice::OnDeviceRemoved(DeviceWatcher sender, DeviceInformationUpdate deviceUpdate)
@@ -130,7 +129,7 @@ fire_and_forget LEDDevice::OnDeviceRemoved(DeviceWatcher sender, DeviceInformati
         m_connected_handler(false);
 }
 
-IAsyncAction LEDDevice::SetLEDs(bool on, float warm, float cool)
+IAsyncOperation<bool> LEDDevice::SetLEDs(bool on, float warm, float cool)
 {
     const LEDState state{
         on,
@@ -138,25 +137,25 @@ IAsyncAction LEDDevice::SetLEDs(bool on, float warm, float cool)
         static_cast<RawLEDComponentType>(cool * std::numeric_limits<RawLEDComponentType>::max()),
     };
 
-    co_await SendReport(USBMessageTypes::SetLEDState, state);
+    co_return co_await SetLEDs(state);
 }
 
-winrt::Windows::Foundation::IAsyncAction LEDDevice::SetLEDs(const LEDState& state)
+IAsyncOperation<bool> LEDDevice::SetLEDs(const LEDState& state)
 {
-    co_await SendReport(USBMessageTypes::SetLEDState, state);
+    co_return co_await SendOp(USBMessageTypes::SetLEDState, state);
 }
 
 IAsyncOperation<bool> LEDDevice::RequestLEDs()
 {
-    // state is ignored for get
-    co_return co_await SendReport(USBMessageTypes::GetLEDState, {});
+    // get op ignores state
+    co_return co_await SendOp(USBMessageTypes::GetLEDState, {});
 }
 
-IAsyncAction LEDDevice::SetOn(bool on)
+IAsyncOperation<bool> LEDDevice::SetOn(bool on)
 {
     auto state { m_last };
     state.on = on;
-    co_await SetLEDs(state);
+    co_return co_await SetLEDs(state);
 }
 
 fire_and_forget LEDDevice::OnInputReportRecieved(HidDevice, HidInputReportReceivedEventArgs args)
@@ -181,12 +180,40 @@ fire_and_forget LEDDevice::OnInputReportRecieved(HidDevice, HidInputReportReceiv
     const auto warm = static_cast<float>(m_last.warm) / numeric_limits<RawLEDComponentType>::max();
     const auto cool = static_cast<float>(m_last.cool) / numeric_limits<RawLEDComponentType>::max();
 
-    // TODO: is the comment below right?
-    // Block the set return code to avoid re-setting state
-    // TODO: handle failures to set?
-    if (m_changed_handler && msg != USBMessageTypes::SetLEDState)
+    if (m_changed_handler)
         m_changed_handler(m_last.on, warm, cool);
+
+    auto local_promise = m_op_promise.lock();
+    if (local_promise)
+        local_promise->set_value(true);
  }
+
+IAsyncOperation<bool> LEDDevice::SendOp(USBMessageTypes msg, const LEDState& state)
+{
+    // dont allow simultaneous ops
+    if (m_op_promise.lock())
+        co_return false;
+
+    // make a promise that will be fulfilled when the response is called, or timeout
+    auto local_promise = make_shared<promise<bool>>();
+    m_op_promise = local_promise;
+    
+    auto strong_self{ get_strong() };
+
+    if (!co_await SendReport(msg, state))
+        co_return false;
+
+    // go to the thread pool to wait for the future
+    co_await winrt::resume_background();
+
+    auto future = local_promise->get_future();
+
+    // USB responses are fast
+    if (future.wait_for(500ms) == future_status::timeout)
+        co_return false;
+
+    co_return future.get();
+}
 
 IAsyncOperation<bool> LEDDevice::SendReport(USBMessageTypes msg, const LEDState& state)
 {
@@ -202,8 +229,7 @@ IAsyncOperation<bool> LEDDevice::SendReport(USBMessageTypes msg, const LEDState&
     array_view<const uint8_t> state_view{ reinterpret_cast<const uint8_t*>(&state), sizeof(state) };
 
     // Report Id is always the first byte
-
-    dataWriter.WriteByte(report.Id());
+    dataWriter.WriteByte(static_cast<uint8_t>(report.Id()));
     dataWriter.WriteByte(static_cast<uint8_t>(msg));
     dataWriter.WriteBytes(state_view);
 

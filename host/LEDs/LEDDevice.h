@@ -1,5 +1,7 @@
 #pragma once
 
+#include <future>
+
 #include "../../common/led_device.h"
 
 struct LEDDevice : winrt::implements<LEDDevice, winrt::Windows::Foundation::IClosable>
@@ -20,10 +22,10 @@ struct LEDDevice : winrt::implements<LEDDevice, winrt::Windows::Foundation::IClo
 	void DiscoverDevice();
 	void Close();
 
-	winrt::Windows::Foundation::IAsyncAction SetLEDs(bool on, float warm, float cool);
-	winrt::Windows::Foundation::IAsyncAction SetLEDs(const LEDState& state);
+	winrt::Windows::Foundation::IAsyncOperation<bool> SetLEDs(bool on, float warm, float cool);
+	winrt::Windows::Foundation::IAsyncOperation<bool> SetLEDs(const LEDState& state);
 	winrt::Windows::Foundation::IAsyncOperation<bool> RequestLEDs();
-	winrt::Windows::Foundation::IAsyncAction SetOn(bool on);
+	winrt::Windows::Foundation::IAsyncOperation<bool> SetOn(bool on);
 
 private:
 	winrt::Microsoft::UI::Dispatching::DispatcherQueue m_dispatcher;
@@ -35,6 +37,7 @@ private:
 	OnLEDStateChanged m_changed_handler {};
 
 	LEDState m_last{};
+	std::weak_ptr<std::promise<bool>> m_op_promise{};
 
 	void StopWatcher();
 
@@ -50,5 +53,9 @@ private:
 		winrt::Windows::Devices::HumanInterfaceDevice::HidDevice,
 		winrt::Windows::Devices::HumanInterfaceDevice::HidInputReportReceivedEventArgs);
 
+	//! Send an operation to the device and wait a response with a timeout
+	winrt::Windows::Foundation::IAsyncOperation<bool> SendOp(USBMessageTypes msg, const LEDState& state);
+
+	//! Send a report to the device and wait for the bytes to be written
 	winrt::Windows::Foundation::IAsyncOperation<bool> SendReport(USBMessageTypes msg, const LEDState& state);
 };
