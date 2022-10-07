@@ -15,6 +15,8 @@ struct LEDState {
     bool                on;     //!< LEDs ON/OFF
     RawLEDComponentType warm;   //!< 0: warm component off, max: warm component at full brightness
     RawLEDComponentType cool;   //!< 0: cool component off, max: cool component at full brightness
+
+    bool operator==(const LEDState& rhs) const = default;
 };
 #pragma pack(pop)
 

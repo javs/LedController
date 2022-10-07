@@ -126,14 +126,18 @@ namespace winrt::LEDs::implementation
         );
     }
 
-    void MainWindow::SetState(bool on, float warm, float cool, bool automatic)
+    void MainWindow::SetState(bool on, float warm, float cool)
     {
         m_block_events = true;
         on_off().IsOn(on);
         warm_slider().Value(warm * 100.0f);
         cool_slider().Value(cool * 100.0f);
-        auto_control().IsOn(automatic);
         m_block_events = false;
+    }
+
+    void MainWindow::SetAutomatic(bool on)
+    {
+        auto_control().IsOn(on);
     }
 
     winrt::event_token MainWindow::LEDsStateChanged(LEDsStateChangedEventHandler const& handler)

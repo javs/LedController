@@ -23,6 +23,7 @@ struct LEDDevice : winrt::implements<LEDDevice, winrt::Windows::Foundation::IClo
 	void Close();
 
 	winrt::Windows::Foundation::IAsyncOperation<bool> SetLEDs(bool on, float warm, float cool);
+	winrt::Windows::Foundation::IAsyncOperation<bool> SetLEDs(float warm, float cool);
 	winrt::Windows::Foundation::IAsyncOperation<bool> SetLEDs(const LEDState& state);
 	winrt::Windows::Foundation::IAsyncOperation<bool> RequestLEDs();
 	winrt::Windows::Foundation::IAsyncOperation<bool> SetOn(bool on);

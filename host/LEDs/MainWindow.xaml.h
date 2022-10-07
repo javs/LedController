@@ -21,7 +21,8 @@ namespace winrt::LEDs::implementation
         void auto_control_Toggled(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void on_off_Toggled(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
 
-        void SetState(bool on, float warm, float cool, bool automatic);
+        void SetState(bool on, float warm, float cool);
+        void SetAutomatic(bool on);
 
         winrt::event_token LEDsStateChanged(winrt::LEDs::LEDsStateChangedEventHandler const& handler);
         void LEDsStateChanged(winrt::event_token const& token) noexcept;

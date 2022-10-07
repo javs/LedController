@@ -69,7 +69,7 @@ void LEDDevice::Close()
 {
     if (!m_device)
         return;
-    
+
     m_device.Close();
     m_device = nullptr;
     m_device_id.clear();
@@ -140,8 +140,21 @@ IAsyncOperation<bool> LEDDevice::SetLEDs(bool on, float warm, float cool)
     co_return co_await SetLEDs(state);
 }
 
+IAsyncOperation<bool> LEDDevice::SetLEDs(float warm, float cool)
+{
+    auto state{ m_last };
+
+    state.warm = static_cast<RawLEDComponentType>(warm * std::numeric_limits<RawLEDComponentType>::max());
+    state.cool = static_cast<RawLEDComponentType>(cool * std::numeric_limits<RawLEDComponentType>::max());
+
+    co_return co_await SetLEDs(state);
+}
+
 IAsyncOperation<bool> LEDDevice::SetLEDs(const LEDState& state)
 {
+    if (m_last == state)
+        co_return true;
+
     co_return co_await SendOp(USBMessageTypes::SetLEDState, state);
 }
 

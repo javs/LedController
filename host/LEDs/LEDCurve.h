@@ -32,6 +32,8 @@ struct LEDCurve
 
 	LEDControl GetLED(std::chrono::local_time<std::chrono::system_clock::duration> t) const;
 
+	static LEDCurve Standard();
+
 private:
 	LEDControl Lerp(const CurveStep& a, const CurveStep& b, const TimeOfDay& time) const;
 

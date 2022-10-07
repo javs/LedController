@@ -9,7 +9,8 @@ namespace LEDs
 
         event LEDsStateChangedEventHandler LEDsStateChanged;
 
-        void SetState(Boolean on, Single warm, Single cool, Boolean automatic);
+        void SetState(Boolean on, Single warm, Single cool);
+        void SetAutomatic(Boolean on);
 
         void Show();
     }

@@ -6,6 +6,7 @@
 
 #include "NotifyIcon.h"
 #include "LEDDevice.h"
+#include "TempManager.h"
 
 namespace winrt::LEDs::implementation
 {
@@ -29,5 +30,6 @@ namespace winrt::LEDs::implementation
         winrt::LEDs::MainWindow window {nullptr};
         std::unique_ptr<NotifyIcon> tray_icon {};
         winrt::com_ptr<LEDDevice> led_device {};
+        TempManager temp_manager{};
     };
 }

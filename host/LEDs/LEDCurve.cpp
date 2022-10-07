@@ -8,6 +8,43 @@
 using namespace std;
 using namespace std::chrono;
 
+LEDCurve LEDCurve::Standard()
+{
+	LEDCurve c{};
+
+	c.AddStep(0, 0, LEDCurve::LEDControl{
+		.warm = 50,
+		.cold = 10,
+		});
+
+	c.AddStep(5, 0, LEDCurve::LEDControl{
+		.warm = 50,
+		.cold = 40,
+		});
+
+	c.AddStep(10, 0, LEDCurve::LEDControl{
+		.warm = 40,
+		.cold = 60,
+		});
+
+	c.AddStep(11, 0, LEDCurve::LEDControl{
+		.warm = 45,
+		.cold = 65,
+		});
+
+	c.AddStep(18, 0, LEDCurve::LEDControl{
+		.warm = 45,
+		.cold = 65,
+		});
+
+	c.AddStep(23, 30, LEDCurve::LEDControl{
+		.warm = 50,
+		.cold = 10,
+		});
+
+	return c;
+}
+
 
 void LEDCurve::AddStep(CurveStep step)
 {

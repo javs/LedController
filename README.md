@@ -13,6 +13,7 @@ USB controller for my monitor LED strip.
 
 ## Host App
 
+* LED warmth control based on time of day.
 * Match LEDs to PC Sleep and Inactivity states.
 * Tray Icon & Flyout
 * WinUI 3 XAML UI

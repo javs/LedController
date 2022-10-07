@@ -17,6 +17,9 @@
     <ClCompile Include="LEDCurve.cpp">
       <Filter>Device</Filter>
     </ClCompile>
+    <ClCompile Include="TempManager.cpp">
+      <Filter>Device</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -26,6 +29,9 @@
       <Filter>Device</Filter>
     </ClInclude>
     <ClInclude Include="LEDCurve.h">
+      <Filter>Device</Filter>
+    </ClInclude>
+    <ClInclude Include="TempManager.h">
       <Filter>Device</Filter>
     </ClInclude>
   </ItemGroup>

@@ -69,6 +69,10 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
     // Hijack the tray icon hwnd for getting these events
     ::RegisterPowerSettingNotification(tray_icon->GetHWND(), &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
     tray_icon->AddMessageHandler(bind_front(&App::TrayMessageHandler, this));
+
+    // TODO
+    window.SetAutomatic(true);
+    temp_manager.SetDevice(led_device);
 }
 
 fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
@@ -88,8 +92,10 @@ fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
         window.Close();
 
         // Release these manually as app never destroys
-        tray_icon.reset();
+        // App now destroys in latest sdk, but the threadpool is gone, making device close abort
+        // TODO
         led_device = nullptr;
+        tray_icon.reset();
         break;
     default:
         break;
@@ -98,29 +104,45 @@ fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
 
 fire_and_forget App::OnUILEDsChanged(bool on, float warm, float cold, bool automatic)
 {
-    co_await led_device->SetLEDs(on, warm, cold);
+    temp_manager.Enable(automatic);
+
+    if (!automatic)
+        co_await led_device->SetLEDs(on, warm, cold);
 }
 
 void App::OnLEDDeviceConnected(bool on)
 {
+    temp_manager.Update();
 }
 
 fire_and_forget App::OnLEDDeviceChanged(bool on, float warm, float cool)
 {
     co_await wil::resume_foreground(window.DispatcherQueue());
 
-    window.SetState(on, warm, cool, false);
+    window.SetState(on, warm, cool);
 }
 
 LRESULT App::TrayMessageHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
+    // TODO: not working
+    //case WM_ENDSESSION:
+    //{
+    //    const auto& session_end = static_cast<BOOL>(wParam);
+    //    const auto& flags = lParam;
+    //    
+    //    //if (session_end && !(flags & ENDSESSION_LOGOFF))
+    //        led_device->SetOn(false);
+
+    //    break;
+    //}
     case WM_POWERBROADCAST:
         switch (wParam)
         {
         case PBT_APMRESUMESUSPEND:
             led_device->SetOn(true);
+            temp_manager.Update();
             return 0;
         case PBT_APMSUSPEND:
             led_device->SetOn(false);
@@ -138,11 +160,13 @@ LRESULT App::TrayMessageHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam)
                 else if (info->Data[0] == 1)    // on
                 {
                     led_device->SetOn(true);
+                    temp_manager.Update();
                     return 0;
                 }
             }
         }
         }
+        break;
     }
 
     return 0;
