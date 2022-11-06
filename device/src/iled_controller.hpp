@@ -4,6 +4,6 @@
 
 struct ILEDController
 {
-    virtual LEDState GetState() = 0;
-    virtual void SetState(const LEDState& state) = 0;
+    virtual LEDs::Common::LEDState GetState() = 0;
+    virtual void SetState(const LEDs::Common::LEDState& state) = 0;
 };

@@ -5,9 +5,9 @@
 #include "settings.hpp"
 
 using namespace std::chrono_literals;
+using namespace LEDs::Common;
 
-const std::chrono::milliseconds LEDController::HighPowerTimeLimit           = 5min;
-const float                     LEDController::HighPowerPercentageTotal     = 120.0f;
+const std::chrono::milliseconds LEDController::HighPowerTimeLimit   = 5min;
 
 
 LEDController::LEDController(PinName cool_pin, PinName warm_pin)
@@ -54,7 +54,7 @@ void LEDController::EnsureLimits()
     {
         // get the reduction each component needs, in raw values
         const auto DistanceToLimit =
-            (m_Cool.GetPercentage() + m_Warm.GetPercentage()) - HighPowerPercentageTotal;
+            (m_Cool.GetPercentage() + m_Warm.GetPercentage()) - TotalPowerLimitPercentage;
 
         const int RawComponentReduction =
             ((DistanceToLimit / 2.0f) / 100) * std::numeric_limits<RawLEDComponentType>::max();
@@ -111,5 +111,5 @@ void LEDController::SetState(const LEDState& state)
 
 bool LEDController::InHighPower()
 {
-    return (m_Cool.GetPercentage() + m_Warm.GetPercentage()) > HighPowerPercentageTotal;
+    return (m_Cool.GetPercentage() + m_Warm.GetPercentage()) > TotalPowerLimitPercentage;
 }

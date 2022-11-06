@@ -5,6 +5,8 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
+using namespace LEDs::Common;
+
 const microseconds LEDComponent::Period = 5ms; // 200hz
 
 LEDComponent::LEDComponent(PinName pin)

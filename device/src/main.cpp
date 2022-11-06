@@ -7,6 +7,8 @@
 #include "settings.hpp"
 #include "usb_led_device.hpp"
 
+using namespace LEDs::Common;
+
 int main()
 {
     EventQueue *queue = mbed::mbed_event_queue();

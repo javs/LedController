@@ -17,10 +17,10 @@ public:
     LEDComponent(PinName pin);
 
     //! \return the current duty cycle value in the 0-65535 range.
-    RawLEDComponentType Get();
+    LEDs::Common::RawLEDComponentType Get();
 
     //! Set the current duty cycle value in the 0-65535 range.
-    void Set(RawLEDComponentType raw);
+    void Set(LEDs::Common::RawLEDComponentType raw);
 
     //! \return the current duty cycle value as a percentage
     float GetPercentage();

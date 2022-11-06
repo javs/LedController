@@ -3,6 +3,7 @@
 #include <functional>
 #include <usb/USBHID.h>
 
+#include "led_device.h"
 #include "iled_controller.hpp"
 
 /*!
@@ -18,7 +19,7 @@ public:
     ~USBLEDDevice();
 
     //! Send a usb message with the indicated state.
-    void SendLEDState(LEDState state);
+    void SendLEDState(LEDs::Common::LEDState state);
 
 private:
 

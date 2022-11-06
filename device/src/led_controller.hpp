@@ -4,6 +4,7 @@
 
 #include <InterruptIn.h>
 
+#include "led_device.h"
 #include "led_component.hpp"
 #include "iled_controller.hpp"
 
@@ -35,6 +36,6 @@ public:
 
     void ToggleOn();
 
-    LEDState GetState() override;
-    void SetState(const LEDState&) override;
+    LEDs::Common::LEDState GetState() override;
+    void SetState(const LEDs::Common::LEDState&) override;
 };

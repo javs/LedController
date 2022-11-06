@@ -16,8 +16,9 @@ class Settings {
     std::unique_ptr<mbed::TDBStore> key_store;
 
     bool                m_SettingOn     = true;
-    RawLEDComponentType m_SettingWarm   = std::numeric_limits<RawLEDComponentType>::max() / 2;
-    RawLEDComponentType m_SettingCool   = 0;
+    LEDs::Common::RawLEDComponentType m_SettingWarm   =
+        std::numeric_limits<LEDs::Common::RawLEDComponentType>::max() / 2;
+    LEDs::Common::RawLEDComponentType m_SettingCool   = 0;
 
     //! Read all settings and write defaults if not found
     void ReadSettings();
@@ -32,9 +33,9 @@ public:
     bool GetOn();
     void SetOn(bool on);
 
-    RawLEDComponentType GetWarm();
-    void SetWarm(RawLEDComponentType warm);
+    LEDs::Common::RawLEDComponentType GetWarm();
+    void SetWarm(LEDs::Common::RawLEDComponentType warm);
 
-    RawLEDComponentType GetCool();
-    void SetCool(RawLEDComponentType cool);
+    LEDs::Common::RawLEDComponentType GetCool();
+    void SetCool(LEDs::Common::RawLEDComponentType cool);
 };

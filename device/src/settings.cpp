@@ -3,6 +3,8 @@
 #include <FlashIAP/FlashIAPBlockDevice.h>
 #include <tdbstore/TDBStore.h>
 
+using namespace LEDs::Common;
+
 Settings::Settings()
 {
     auto ret = flash_all.init();

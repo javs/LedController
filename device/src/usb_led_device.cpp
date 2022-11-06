@@ -5,6 +5,8 @@
 
 #include "usb_led_device.hpp"
 
+using namespace LEDs::Common;
+
 USBLEDDevice::USBLEDDevice(ILEDController& controller)
     : USBHID(
         get_usb_phy(),
