@@ -47,5 +47,5 @@ namespace LEDs::Common {
 
     //! The max amount combined components can go, in percentages.
     //! Device allows higher than this (up to 200%), but only for a short time.
-    const float          TotalPowerLimitPercentage = 120.0f;
+    const float          TotalPowerLimitPercentage = 110.0f;
 }
