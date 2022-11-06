@@ -18,12 +18,14 @@ public:
     
     ~USBLEDDevice();
 
-    //! Send a usb message with the indicated state.
-    void SendLEDState(LEDs::Common::LEDState state);
+    //! Send a usb message with the indicated id and state.
+    void SendUSBMessage(LEDs::Common::USBMessageTypes id, LEDs::Common::LEDState state);
 
 private:
 
     ILEDController& m_Controller;
 
     void report_rx() override;
+
+    void OnControllerStateChanged(bool user, const LEDs::Common::LEDState& state);
 };

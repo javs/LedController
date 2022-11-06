@@ -21,6 +21,11 @@ USBLEDDevice::USBLEDDevice(ILEDController& controller)
     printf("USB support is on.\n");
 #endif
 
+    using namespace std::placeholders;
+    ILEDController::OnStateChanged delegate =
+        std::bind(&USBLEDDevice::OnControllerStateChanged, this, _1, _2);
+    controller.SetEventDelegate(delegate);
+
     connect();
     wait_ready();
 }
@@ -49,7 +54,7 @@ void USBLEDDevice::report_rx()
                 case USBMessageTypes::GetLEDState:
                 {
                     auto state = m_Controller.GetState();
-                    SendLEDState(state);
+                    SendUSBMessage(USBMessageTypes::SetLEDState, state);
                     break;
                 }
                 case USBMessageTypes::SetLEDState:
@@ -59,7 +64,7 @@ void USBLEDDevice::report_rx()
                     m_Controller.SetState(state);
 
                     // Respond back with the same state set
-                    SendLEDState(state);
+                    SendUSBMessage(USBMessageTypes::SetLEDState, state);
                     break;
                 }
                 default:
@@ -69,7 +74,7 @@ void USBLEDDevice::report_rx()
     }
 }
 
-void USBLEDDevice::SendLEDState(LEDState state)
+void USBLEDDevice::SendUSBMessage(USBMessageTypes id, LEDState state)
 {
     HID_REPORT output_report{
         .length = USBReportOutputLength,
@@ -78,10 +83,18 @@ void USBLEDDevice::SendLEDState(LEDState state)
 
     // Fill type & state in the target structure
     uint8_t* offset = output_report.data;
-    *(reinterpret_cast<USBMessageTypes*>(offset)) = USBMessageTypes::GetLEDState;
+    *(reinterpret_cast<USBMessageTypes*>(offset)) = id;
 
     offset += sizeof(USBMessageTypes::GetLEDState);
     *(reinterpret_cast<LEDState*>(offset)) = state;
 
     send(&output_report);
+}
+
+void USBLEDDevice::OnControllerStateChanged(bool user, const LEDs::Common::LEDState& state)
+{
+    SendUSBMessage(
+        user ? USBMessageTypes::UserLEDState : USBMessageTypes::GetLEDState,
+        state
+        );
 }

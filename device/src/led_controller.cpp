@@ -84,10 +84,11 @@ void LEDController::EnsureLimits()
         settings.SetWarm(new_warm);
         settings.SetCool(new_cool);
         UpdateLEDs();
+        m_ChangedDelegate(false, GetState());
     }
 }
 
-LEDState LEDController::GetState()
+LEDState LEDController::GetState() const
 {
     auto& settings = Settings::get();
 
@@ -112,4 +113,9 @@ void LEDController::SetState(const LEDState& state)
 bool LEDController::InHighPower()
 {
     return (m_Cool.GetPercentage() + m_Warm.GetPercentage()) > TotalPowerLimitPercentage;
+}
+
+void LEDController::SetEventDelegate(OnStateChanged& delegate)
+{
+    m_ChangedDelegate = delegate;
 }

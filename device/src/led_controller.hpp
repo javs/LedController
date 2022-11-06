@@ -22,6 +22,7 @@ class LEDController : public ILEDController
     LEDComponent m_Warm;
     mbed::InterruptIn m_Button {BUTTON1};
     int m_LimitsTimer {0};
+    OnStateChanged m_ChangedDelegate{};
 
     void UpdateLEDs();
 
@@ -36,6 +37,8 @@ public:
 
     void ToggleOn();
 
-    LEDs::Common::LEDState GetState() override;
+    LEDs::Common::LEDState GetState() const override;
     void SetState(const LEDs::Common::LEDState&) override;
+
+    void SetEventDelegate(OnStateChanged& delegate) override;
 };

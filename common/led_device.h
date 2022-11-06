@@ -6,7 +6,7 @@
 namespace LEDs::Common {
 
     const uint8_t DeviceVersionMajor = 1; //! Major version of the device code
-    const uint8_t DeviceVersionMinor = 0; //! Minor version of the device code
+    const uint8_t DeviceVersionMinor = 1; //! Minor version of the device code
 
     using RawLEDComponentType = uint16_t;
 
@@ -27,10 +27,11 @@ namespace LEDs::Common {
     };
     #pragma pack(pop)
 
-
+    //! Message IDs sent/received via usb, from the device perspective.
     enum class USBMessageTypes : uint8_t {
-        GetLEDState,
-        SetLEDState,
+        GetLEDState,        //!< Sent/Received to get state. Received when power limit enforced.
+        SetLEDState,        //!< Sent/Received to set state. Response confirms state.
+        UserLEDState,       //!< Received when state is set by a device user action (e.g. button).
     };
 
     //! See https://github.com/obdev/v-usb/blob/master/usbdrv/USB-IDs-for-free.txt
