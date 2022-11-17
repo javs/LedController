@@ -11,10 +11,21 @@
 //! Represents a single component of a LED strip (red, green, cool, etc.)
 class LEDComponent {
     static const std::chrono::microseconds Period;
+    static const float ChangePerMicrosecond;
+    static const float UpdateCutoff;
+
     mbed::PwmOut m_Pin;
+    float m_SetPoint;
+    int m_UpdateTimer{};
+
+    //! Called when it's time to update the pin to get closer to the setpoint.
+    void UpdatePin();
+
+    //! Start/Stop the update timer as needed.
+    void CheckForUpdate();
 
 public:
-    LEDComponent(PinName pin);
+    explicit LEDComponent(PinName pin);
 
     //! \return the current duty cycle value in the 0-65535 range.
     LEDs::Common::RawLEDComponentType Get();
@@ -24,4 +35,7 @@ public:
 
     //! \return the current duty cycle value as a percentage
     float GetPercentage();
+
+    //! \return true if the pin doesn't match the setpoint, and is updating to do so.
+    bool IsUpdating();
 };
