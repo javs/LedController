@@ -11,7 +11,14 @@
 //! Represents a single component of a LED strip (red, green, cool, etc.)
 class LEDComponent {
     static const std::chrono::microseconds Period;
-    static const float ChangePerMicrosecond;
+
+    //! Light percentage to change per update tick.
+    static const float ChangePerTick;
+
+    //! Time between change while updating led pin.
+    static const std::chrono::milliseconds ChangeDelay;
+
+    //! Difference from setpoint to current state to not consider update.
     static const float UpdateCutoff;
 
     mbed::PwmOut m_Pin;
