@@ -20,6 +20,22 @@ using namespace Windows::Foundation;
 
 using namespace winrt::Microsoft::UI::Dispatching;
 
+using namespace LEDs::Common;
+
+
+LEDDevice::State::State(LEDs::Common::LEDState& usb_state)
+    : on(usb_state.on)
+    , warm(static_cast<float>(usb_state.warm) / numeric_limits<RawLEDComponentType>::max())
+    , cool(static_cast<float>(usb_state.cool) / numeric_limits<RawLEDComponentType>::max())
+{
+}
+
+LEDDevice::State::State(bool on, float warm, float cool)
+    : on(on)
+    , warm(warm)
+    , cool(cool)
+{
+}
 
 LEDDevice::LEDDevice(DispatcherQueue dispatcher)
     : m_dispatcher(dispatcher)
@@ -73,6 +89,7 @@ void LEDDevice::Close()
     m_device.Close();
     m_device = nullptr;
     m_device_id.clear();
+    m_last = {};
 }
 
 fire_and_forget LEDDevice::OnDeviceAdded(DeviceWatcher sender, DeviceInformation deviceInterface)
@@ -103,7 +120,7 @@ fire_and_forget LEDDevice::OnDeviceAdded(DeviceWatcher sender, DeviceInformation
     }
 
     m_device_id = deviceInterface.Id();
-    m_device.InputReportReceived({ this, &LEDDevice::OnInputReportRecieved });
+    m_device.InputReportReceived({ this, &LEDDevice::OnInputReportReceived });
 
     if (m_connected_handler)
         m_connected_handler(true);
@@ -142,20 +159,21 @@ IAsyncOperation<bool> LEDDevice::SetLEDs(bool on, float warm, float cool)
 
 IAsyncOperation<bool> LEDDevice::SetLEDs(float warm, float cool)
 {
-    auto state{ m_last };
-
-    state.warm = static_cast<RawLEDComponentType>(warm * std::numeric_limits<RawLEDComponentType>::max());
-    state.cool = static_cast<RawLEDComponentType>(cool * std::numeric_limits<RawLEDComponentType>::max());
-
-    co_return co_await SetLEDs(state);
+    co_return co_await SetLEDs(m_last.on, warm, cool);
 }
 
 IAsyncOperation<bool> LEDDevice::SetLEDs(const LEDState& state)
 {
+    // state already matches, silently succeeed
     if (m_last == state)
         co_return true;
 
-    co_return co_await SendOp(USBMessageTypes::SetLEDState, state);
+    if (!co_await SendOp(USBMessageTypes::SetLEDState, state))
+        co_return false;
+
+    // TODO: maybe check it set? (compare last with state)
+
+    co_return true;
 }
 
 IAsyncOperation<bool> LEDDevice::RequestLEDs()
@@ -171,34 +189,75 @@ IAsyncOperation<bool> LEDDevice::SetOn(bool on)
     co_return co_await SetLEDs(state);
 }
 
-fire_and_forget LEDDevice::OnInputReportRecieved(HidDevice, HidInputReportReceivedEventArgs args)
+void LEDDevice::ParseInputReport(const HidInputReport& report, USBMessageTypes& msg, LEDState& state)
 {
-    auto strong_self{ get_strong() };
-
-    // Go back to foreground to sync
-    co_await wil::resume_foreground(m_dispatcher);
-
-    DataReader data_reader { DataReader::FromBuffer(args.Report().Data()) };
+    DataReader data_reader{ DataReader::FromBuffer(report.Data()) };
 
     data_reader.ByteOrder(ByteOrder::LittleEndian);
 
-    auto id = data_reader.ReadByte();
-    auto msg = static_cast<USBMessageTypes>(data_reader.ReadByte());
+    const auto length = report.Data().Length();
+    if (length != USBReportInputLength +1) // add a byte for the ID
+        throw runtime_error("Recieved USB Input Report with the wrong length: " + to_string(length));
 
-    array_view<uint8_t> state_view{ reinterpret_cast<uint8_t*>(&m_last), sizeof(m_last) };
+    const auto id = data_reader.ReadByte();
+    if (id != 0)
+        throw runtime_error("Received wrong USB Input Report ID: " + to_string(id));
+
+    msg = static_cast<USBMessageTypes>(data_reader.ReadByte());
+
+    array_view<uint8_t> state_view{ reinterpret_cast<uint8_t*>(&state), sizeof(state) };
 
     data_reader.ReadBytes(state_view);
+}
 
-    // Convert to float 0-1 rates
-    const auto warm = static_cast<float>(m_last.warm) / numeric_limits<RawLEDComponentType>::max();
-    const auto cool = static_cast<float>(m_last.cool) / numeric_limits<RawLEDComponentType>::max();
+fire_and_forget LEDDevice::OnInputReportReceived(HidDevice, HidInputReportReceivedEventArgs args)
+{
+    auto strong_self{ get_strong() };
 
-    if (m_changed_handler)
-        m_changed_handler(m_last.on, warm, cool);
+    try
+    {
+        // Go back to foreground to sync
+        co_await wil::resume_foreground(m_dispatcher);
 
-    auto local_promise = m_op_promise.lock();
-    if (local_promise)
-        local_promise->set_value(true);
+        LEDState state;
+        USBMessageTypes msg;
+        ParseInputReport(args.Report(), msg, state);
+
+        switch (msg)
+        {
+        case USBMessageTypes::GetLEDState:
+        case USBMessageTypes::SetLEDState:
+        {
+            // Get/Set are responses to messages sent, so a promise is waiting fullfillment
+            auto local_promise = m_op_promise.lock();
+            if (local_promise)
+                local_promise->set_value(true);
+            // else: response without request, ignore
+            break;
+        }
+        case USBMessageTypes::UserLEDState:
+        {
+            // UserLEDState is an unsolicited message, ignore promises
+            break;
+        }
+        default:
+            throw runtime_error("Unknown USB message received: " + to_string(static_cast<uint8_t>(msg)));
+        }
+
+        m_last = state;
+
+        if (m_changed_handler)
+            m_changed_handler(m_last);
+    }
+    catch (exception& ex)
+    {
+        // If there is a promise, set the exception to it instead of throwing
+        auto local_promise = m_op_promise.lock();
+        if (local_promise)
+            local_promise->set_exception(std::current_exception());
+        else
+            throw;
+    }
  }
 
 IAsyncOperation<bool> LEDDevice::SendOp(USBMessageTypes msg, const LEDState& state)
@@ -208,7 +267,7 @@ IAsyncOperation<bool> LEDDevice::SendOp(USBMessageTypes msg, const LEDState& sta
         co_return false;
 
     // make a promise that will be fulfilled when the response is called, or timeout
-    auto local_promise = make_shared<promise<bool>>();
+    auto local_promise = make_shared<OpPromise>();
     m_op_promise = local_promise;
     
     auto strong_self{ get_strong() };
@@ -223,7 +282,7 @@ IAsyncOperation<bool> LEDDevice::SendOp(USBMessageTypes msg, const LEDState& sta
 
     // USB responses are fast
     if (future.wait_for(500ms) == future_status::timeout)
-        co_return false;
+        throw std::runtime_error("USB timed out for op: " + to_string(static_cast<uint8_t>(msg)));
 
     co_return future.get();
 }
@@ -250,7 +309,10 @@ IAsyncOperation<bool> LEDDevice::SendReport(USBMessageTypes msg, const LEDState&
 
     auto strong_self{ get_strong() };
     
-    auto response = co_await m_device.SendOutputReportAsync(report);
+    auto bytes_sent = co_await m_device.SendOutputReportAsync(report);
 
-    co_return response == report.Data().Length();
+    if (bytes_sent != report.Data().Length())
+        throw std::runtime_error("Wrong number of bytes sent via USB: " + to_string(bytes_sent));
+
+    co_return true;
 }

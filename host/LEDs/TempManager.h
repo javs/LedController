@@ -19,7 +19,7 @@ public:
 	TempManager();
 	
 	//! Refresh current LEDs state
-	winrt::fire_and_forget Update();
+	winrt::Windows::Foundation::IAsyncOperation<bool> Update();
 
 	void SetDevice(winrt::com_ptr<LEDDevice>& device);
 

@@ -6,6 +6,8 @@
 
 using namespace winrt;
 using namespace winrt::Microsoft::UI::Dispatching;
+using namespace winrt::Windows::Foundation;
+
 using namespace std::literals::chrono_literals;
 
 TempManager::TempManager()
@@ -20,15 +22,17 @@ void TempManager::SetDevice(winrt::com_ptr<LEDDevice>& device)
 	m_device = device;
 }
 
-fire_and_forget TempManager::Update()
+IAsyncOperation<bool> TempManager::Update()
 {
 	if (!IsEnabled())
-		co_return;
+		co_return true;
 
 	auto led_step = m_curve.GetLEDAtCurrentTime();
 	
 	if (auto device{m_device.get()})
-		co_await device->SetLEDs(led_step.warm / 100.0f, led_step.cold / 100.0f);
+		co_return co_await device->SetLEDs(led_step.warm / 100.0f, led_step.cold / 100.0f);
+
+	co_return false;
 }
 
 void TempManager::Enable(bool enable)
