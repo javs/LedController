@@ -5,7 +5,7 @@
 
 class TempManager
 {
-	// Disable copying and moving, as m_timer isnt.
+	// Disable copying and moving, as m_timer can't be.
 	TempManager(const TempManager&) = delete;
 	TempManager& operator=(const TempManager&) = delete;
 	TempManager& operator=(TempManager&& other) noexcept = delete;

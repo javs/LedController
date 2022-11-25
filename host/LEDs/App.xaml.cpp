@@ -10,13 +10,13 @@
 
 using namespace std;
 using namespace winrt;
-using namespace Windows::Foundation;
+using namespace winrt::Windows::Foundation;
 using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 using namespace winrt::Microsoft::UI::Xaml::Navigation;
 using namespace winrt::Microsoft::UI::Windowing;
-using namespace LEDs;
-using namespace LEDs::implementation;
+using namespace winrt::LEDs;
+using namespace winrt::LEDs::implementation;
 
 
 const wchar_t* App::TrayIconPath = L"Assets/dark.ico";
@@ -81,7 +81,6 @@ fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
     {
     case NotifyIcon::MouseButton::Left:
     {
-        // TODO: use return value
         co_await led_device->RequestLEDs();
 
         window.Show();
@@ -108,18 +107,35 @@ fire_and_forget App::OnUILEDsChanged(bool on, float warm, float cold, bool autom
 
     if (!automatic)
         co_await led_device->SetLEDs(on, warm, cold);
+    else
+        ReapplyDevice();
 }
 
 void App::OnLEDDeviceConnected(bool on)
 {
-    temp_manager.Update();
+    // a device connected, refresh it based on the expected state
+    if (on)
+        ReapplyDevice();
 }
 
-fire_and_forget App::OnLEDDeviceChanged(bool on, float warm, float cool)
+fire_and_forget App::OnLEDDeviceChanged(LEDDevice::State state)
 {
     co_await wil::resume_foreground(window.DispatcherQueue());
 
-    window.SetState(on, warm, cool);
+    window.SetState(state.on, state.warm, state.cool);
+}
+
+void App::SetIdle(bool new_idle)
+{
+    idle = new_idle;
+
+    ReapplyDevice();
+}
+
+fire_and_forget App::ReapplyDevice()
+{
+    co_await led_device->SetOn(!idle);
+    co_await temp_manager.Update();
 }
 
 LRESULT App::TrayMessageHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -141,11 +157,10 @@ LRESULT App::TrayMessageHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam)
         switch (wParam)
         {
         case PBT_APMRESUMESUSPEND:
-            led_device->SetOn(true);
-            temp_manager.Update();
+            SetIdle(false);
             return 0;
         case PBT_APMSUSPEND:
-            led_device->SetOn(false);
+            SetIdle(true);
             return 0;
         case PBT_POWERSETTINGCHANGE:
         {
@@ -154,13 +169,12 @@ LRESULT App::TrayMessageHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam)
             {
                 if (info->Data[0] == 0)         // off
                 {
-                    led_device->SetOn(false);
+                    SetIdle(true);
                     return 0;
                 }
                 else if (info->Data[0] == 1)    // on
                 {
-                    led_device->SetOn(true);
-                    temp_manager.Update();
+                    SetIdle(false);
                     return 0;
                 }
             }
