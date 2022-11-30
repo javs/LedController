@@ -1,6 +1,5 @@
 #pragma once
 
-#include "LEDDevice.h"
 #include "LEDCurve.h"
 
 class TempManager
@@ -11,17 +10,18 @@ class TempManager
 	TempManager& operator=(TempManager&& other) noexcept = delete;
 	TempManager(TempManager&&) noexcept = delete;
 
-	winrt::weak_ref<LEDDevice> m_device {};
+	using UpdateDelegate = winrt::delegate<void(float, float)>;
+	UpdateDelegate m_delegate;
 	winrt::Microsoft::UI::Xaml::DispatcherTimer m_timer {};
 	LEDCurve m_curve;
 
 public:
 	TempManager();
+
+	void OnUpdated(UpdateDelegate delegate);
 	
 	//! Refresh current LEDs state
-	winrt::Windows::Foundation::IAsyncOperation<bool> Update();
-
-	void SetDevice(winrt::com_ptr<LEDDevice>& device);
+	void Update();
 
 	//! Whether this object acts or not. Starts disabled.
 	void Enable(bool enable);

@@ -25,6 +25,8 @@ namespace winrt::LEDs::implementation
         fire_and_forget OnUILEDsChanged(bool on, float warm, float cold, bool automatic);
         LRESULT TrayMessageHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+        fire_and_forget OnTempUpdated(float warm, float cool);
+
         fire_and_forget ReapplyDevice();
         void SetIdle(bool new_idle);
 
@@ -34,7 +36,7 @@ namespace winrt::LEDs::implementation
         winrt::LEDs::MainWindow window {nullptr};
         std::unique_ptr<NotifyIcon> tray_icon {};
         winrt::com_ptr<LEDDevice> led_device {};
-        TempManager temp_manager{};
+        TempManager temp_manager {};
         bool idle{ false };
     };
 }

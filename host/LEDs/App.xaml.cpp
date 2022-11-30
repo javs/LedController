@@ -72,7 +72,8 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
 
     // TODO
     window.SetAutomatic(true);
-    temp_manager.SetDevice(led_device);
+
+    temp_manager.OnUpdated({ this, &App::OnTempUpdated });
 }
 
 fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
@@ -132,10 +133,18 @@ void App::SetIdle(bool new_idle)
     ReapplyDevice();
 }
 
+fire_and_forget App::OnTempUpdated(float warm, float cool)
+{
+    co_await led_device->SetLEDs(!idle, warm, cool);
+}
+
 fire_and_forget App::ReapplyDevice()
 {
-    co_await led_device->SetOn(!idle);
-    co_await temp_manager.Update();
+    // Only update the temp manager for auto mode, otherwise keep device as is
+
+    // temp_manager requires main thread
+    co_await wil::resume_foreground(window.DispatcherQueue());
+    temp_manager.Update();
 }
 
 LRESULT App::TrayMessageHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam)

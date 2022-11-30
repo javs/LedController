@@ -16,23 +16,20 @@ TempManager::TempManager()
 	m_timer.Interval(30s);
 	m_timer.Tick([this](auto&, auto&) {this->Update();});
 }
-
-void TempManager::SetDevice(winrt::com_ptr<LEDDevice>& device)
+void TempManager::OnUpdated(UpdateDelegate delegate)
 {
-	m_device = device;
+	m_delegate = std::move(delegate);
 }
 
-IAsyncOperation<bool> TempManager::Update()
+void TempManager::Update()
 {
 	if (!IsEnabled())
-		co_return true;
+		return;
 
 	auto led_step = m_curve.GetLEDAtCurrentTime();
 	
-	if (auto device{m_device.get()})
-		co_return co_await device->SetLEDs(led_step.warm / 100.0f, led_step.cold / 100.0f);
-
-	co_return false;
+	if (m_delegate)
+		m_delegate(led_step.warm / 100.0f, led_step.cold / 100.0f);
 }
 
 void TempManager::Enable(bool enable)

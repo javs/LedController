@@ -249,7 +249,7 @@ fire_and_forget LEDDevice::OnInputReportReceived(HidDevice, HidInputReportReceiv
         if (m_changed_handler)
             m_changed_handler(m_last);
     }
-    catch (exception& ex)
+    catch (exception&)
     {
         // If there is a promise, set the exception to it instead of throwing
         auto local_promise = m_op_promise.lock();
@@ -308,7 +308,7 @@ IAsyncOperation<bool> LEDDevice::SendReport(USBMessageTypes msg, const LEDState&
     report.Data(dataWriter.DetachBuffer());
 
     auto strong_self{ get_strong() };
-    
+
     auto bytes_sent = co_await m_device.SendOutputReportAsync(report);
 
     if (bytes_sent != report.Data().Length())
