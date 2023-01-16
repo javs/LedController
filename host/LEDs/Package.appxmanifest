@@ -7,13 +7,13 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="6dcedc8a-4396-4ddc-8a3e-1e8b7e4f5295"
+    Name="javs.LEDS"
     Publisher="CN=javie"
     Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>LEDs</DisplayName>
-    <PublisherDisplayName>javie</PublisherDisplayName>
+    <PublisherDisplayName>Javs</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

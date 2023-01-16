@@ -67,10 +67,10 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
     led_device->DiscoverDevice();
 
     // Hijack the tray icon hwnd for getting these events
+    // TODO: use app sdk when fixed: https://github.com/microsoft/WindowsAppSDK/issues/2833
     ::RegisterPowerSettingNotification(tray_icon->GetHWND(), &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
     tray_icon->AddMessageHandler(bind_front(&App::TrayMessageHandler, this));
 
-    // TODO
     window.SetAutomatic(true);
 
     temp_manager.OnUpdated({ this, &App::OnTempUpdated });
@@ -91,9 +91,7 @@ fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
     case NotifyIcon::MouseButton::Right:
         window.Close();
 
-        // Release these manually as app never destroys
-        // App now destroys in latest sdk, but the threadpool is gone, making device close abort
-        // TODO
+        // Release these manually as app never releases
         led_device = nullptr;
         tray_icon.reset();
         break;
@@ -135,12 +133,27 @@ void App::SetIdle(bool new_idle)
 
 fire_and_forget App::OnTempUpdated(float warm, float cool)
 {
-    co_await led_device->SetLEDs(!idle, warm, cool);
+    bool result = false;
+    try
+    {
+        result = co_await led_device->SetLEDs(!idle, warm, cool);
+    }
+    catch (...) {} // retry on any exception
+
+    // On failure, try once more
+    if (!result)
+    {
+        co_await 500ms;
+        try {
+            co_await led_device->SetLEDs(!idle, warm, cool);
+        } catch (...) {}; // give up until next update
+    }
 }
 
 fire_and_forget App::ReapplyDevice()
 {
     // Only update the temp manager for auto mode, otherwise keep device as is
+    // Only auto mode can get out sync, manual mode just uses the current device reported state
 
     // temp_manager requires main thread
     co_await wil::resume_foreground(window.DispatcherQueue());
@@ -151,7 +164,7 @@ LRESULT App::TrayMessageHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
-    // TODO: not working
+    // TODO: not working, event never received
     //case WM_ENDSESSION:
     //{
     //    const auto& session_end = static_cast<BOOL>(wParam);
