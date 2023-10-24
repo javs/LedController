@@ -164,8 +164,8 @@ IAsyncOperation<bool> LEDDevice::SetLEDs(float warm, float cool)
 
 IAsyncOperation<bool> LEDDevice::SetLEDs(const LEDState& state)
 {
-    // state already matches, silently succeeed
-    if (m_last == state)
+    // state already matches, or leds are off and there is a change in warmth, silently succeeed
+    if (m_last == state || (!m_last.on && !state.on))
         co_return true;
 
     if (!co_await SendOp(USBMessageTypes::SetLEDState, state))
