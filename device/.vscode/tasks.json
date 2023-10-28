@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Deploy mbed",
+            "detail": "Download mbed",
+            "type": "shell",
+            "command": "mbed-tools deploy",
+            "problemMatcher": [],
+        },
+        {
+            "label": "Generate mbed build",
+            "detail": "Generates mbed cmake files",
+            "type": "shell",
+            "command": "mbed-tools configure -m NUCLEO_F303RE -t GCC_ARM",
+            "problemMatcher": [],
+        }
+    ]
+}

@@ -18,3 +18,11 @@ USB controller for my monitor LED strip.
 * Tray Icon & Flyout
 * WinUI 3 XAML UI
 * Windows App SDK Packaged App
+
+## Development
+
+### Device
+
+    podman build device/docker --tag leds-device-builder:latest
+    podman run --rm -it --name leds-device -v .:/src leds-device-builder
+
