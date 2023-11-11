@@ -23,6 +23,36 @@ USB controller for my monitor LED strip.
 
 ### Device
 
-    podman build device/docker --tag leds-device-builder:latest
-    podman run --rm -it --name leds-device -v .:/src leds-device-builder
+#### Container
+
+    podman build \
+        --tag leds-device-builder:latest \
+        device/docker
+
+    podman run \
+        --rm -it \
+        --name leds-device \
+        -v .:/src \
+        --device /dev/ttyACM0 \
+        --group-add keep-groups \
+        leds-device-builder
+
+#### ST-Link
+
+1. Jumpers in normal position:
+    1. JP1 removed.
+    1. ST-LINK both populated.
+    1. JP5 populated in 2-3 (E5V).
+1. Connect main USB port & power supply.
+1. LD3 solid, LD1 blinking.
+1. Connect USB debug CN1.
+1. Device reset and LD1 solid.
+
+#### Upload
+
+Copy binary to USB storage device.
+
+#### Console UART
+
+    mbed-tools sterm -p /dev/ttyACM0
 
