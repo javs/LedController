@@ -46,7 +46,7 @@ void USBLEDDevice::report_rx()
     {
         auto queue = mbed::mbed_event_queue();
 
-        queue->call([=]() mutable {
+        queue->call([=, this]() mutable {
             const auto message_type = *(reinterpret_cast<USBMessageTypes*>(input_report.data));
 
             switch(message_type)
@@ -68,7 +68,7 @@ void USBLEDDevice::report_rx()
                     break;
                 }
                 default:
-                    printf("Invalid USB message: %i", static_cast<int>(message_type));
+                    printf("Invalid USB message: %i\n", static_cast<int>(message_type));
             }
         });
     }
