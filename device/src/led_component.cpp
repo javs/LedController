@@ -11,8 +11,8 @@ using namespace LEDs::Common;
 
 const microseconds  LEDComponent::Period = 5ms; // 200hz
 
-const float         LEDComponent::ChangePerTick = 0.002f;
-const milliseconds  LEDComponent::ChangeDelay   = 20ms;
+const milliseconds  LEDComponent::ChangeTick    = 25ms;
+const milliseconds  LEDComponent::ChangeTime    = 3000ms;
 const float         LEDComponent::UpdateCutoff  = 0.0001f;
 
 LEDComponent::LEDComponent(PinName pin)
@@ -30,6 +30,9 @@ RawLEDComponentType LEDComponent::Get()
 void LEDComponent::Set(RawLEDComponentType raw)
 {
     m_SetPoint = static_cast<float>(raw) / std::numeric_limits<RawLEDComponentType>::max();
+    m_SetPointEnd = rtos::Kernel::Clock::now() + ChangeTime;
+    m_UpdateSpeed = (m_SetPoint - m_Pin) / (ChangeTime / ChangeTick);
+    
     UpdatePin();
 }
 
@@ -40,30 +43,15 @@ float LEDComponent::GetPercentage()
 
 void LEDComponent::UpdatePin()
 {
-    if (IsUpdating())
-        m_Pin = m_Pin + std::clamp(m_SetPoint - m_Pin, -ChangePerTick, ChangePerTick);
-    else
-        m_Pin = m_SetPoint; // Set it anyway to try overcome any difference in precision
-
-    CheckForUpdate();
-}
-
-bool LEDComponent::IsUpdating()
-{
-    return std::abs(m_SetPoint - m_Pin) > UpdateCutoff;
-}
-
-void LEDComponent::CheckForUpdate()
-{
     auto queue = mbed::mbed_event_queue();
 
-    if (IsUpdating())
-    {
-        if (m_UpdateTimer == 0)
-            m_UpdateTimer = queue->call_every(ChangeDelay, this, &LEDComponent::UpdatePin);
-    }
-    else
-    {
+    auto now = rtos::Kernel::Clock::now();
+
+    // End of update, or difference too small
+    if (now >= m_SetPointEnd || std::abs(m_SetPoint - m_Pin) < UpdateCutoff) {
+        // Set it anyway to try overcome any difference in precision
+        m_Pin = m_SetPoint;
+
         if (m_UpdateTimer != 0)
         {
             // Ignore result, will return false due to cancelling within timer,
@@ -71,5 +59,10 @@ void LEDComponent::CheckForUpdate()
             queue->cancel(m_UpdateTimer);
             m_UpdateTimer = 0;
         }
+    } else {
+        m_Pin = m_Pin + m_UpdateSpeed;
+
+        if (m_UpdateTimer == 0)
+            m_UpdateTimer = queue->call_every(ChangeTick, this, &LEDComponent::UpdatePin);
     }
 }

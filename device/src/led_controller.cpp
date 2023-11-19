@@ -20,7 +20,10 @@ LEDController::LEDController(PinName cool_pin, PinName warm_pin)
         queue->call(this, &LEDController::ToggleOn);
     });
 
-    UpdateLEDs();
+    // Don't begin the initial transition on the main code start path to avoid stutters
+    auto queue = mbed::mbed_event_queue();
+
+    queue->call(this, &LEDController::UpdateLEDs);
 }
 
 void LEDController::ToggleOn()

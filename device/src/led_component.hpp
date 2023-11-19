@@ -2,6 +2,8 @@
 
 #include <chrono>
 
+#include <rtos/Kernel.h>
+
 #include <PinNames.h>
 #include <PwmOut.h>
 
@@ -12,11 +14,11 @@
 class LEDComponent {
     static const std::chrono::microseconds Period;
 
-    //! Light percentage to change per update tick.
-    static const float ChangePerTick;
-
     //! Time between change while updating led pin.
-    static const std::chrono::milliseconds ChangeDelay;
+    static const std::chrono::milliseconds ChangeTick;
+
+    //! Total time to update led.
+    static const std::chrono::milliseconds ChangeTime;
 
     //! Difference from setpoint to current state to not consider update.
     static const float UpdateCutoff;
@@ -24,12 +26,11 @@ class LEDComponent {
     mbed::PwmOut m_Pin;
     float m_SetPoint;
     int m_UpdateTimer{};
+    float m_UpdateSpeed{};
+    rtos::Kernel::Clock::time_point m_SetPointEnd{};
 
     //! Called when it's time to update the pin to get closer to the setpoint.
     void UpdatePin();
-
-    //! Start/Stop the update timer as needed.
-    void CheckForUpdate();
 
 public:
     explicit LEDComponent(PinName pin);
@@ -42,7 +43,4 @@ public:
 
     //! \return the current duty cycle value as a percentage
     float GetPercentage();
-
-    //! \return true if the pin doesn't match the setpoint, and is updating to do so.
-    bool IsUpdating();
 };
