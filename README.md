@@ -10,6 +10,7 @@ USB controller for my monitor LED strip.
 * Control via a USB HID device
 * Mbed 6.x
 * STM32F3
+* Light and Gesture Sensor: APDS 9960
 
 ## Host App
 
@@ -63,3 +64,8 @@ Copy binary to USB storage device.
 
     mbed-tools sterm -p /dev/ttyACM0
 
+### Links
+
+* [Nucleo Pinout](https://os.mbed.com/platforms/ST-Nucleo-F303RE/)
+* [STM32F303RE Manual](https://www.st.com/resource/en/datasheet/stm32f303re.pdf)
+* [APDS 9960 Adafruit Docs](https://learn.adafruit.com/adafruit-apds9960-breakout/circuitpython)
