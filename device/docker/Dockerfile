@@ -21,8 +21,9 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/pacman \
     && rm -rf yay
 
 RUN --mount=type=cache,sharing=locked,target=/var/cache/pacman \
-    yay -Syu --noconfirm --needed \
+    yay -Syu --cleanafter --noconfirm --needed \
         cmake \
+        ninja \
         gcc-arm-none-eabi-bin \
         python-pip \
         python-setuptools \

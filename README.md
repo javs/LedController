@@ -41,6 +41,7 @@ USB controller for my monitor LED strip.
         --rm -it \
         --name leds-device \
         -v .:/src \
+        -v /run/media/$USER/NODE_F303RE/:/device \
         --device /dev/ttyACM0 \
         --group-add keep-groups \
         leds-device-builder
@@ -58,9 +59,11 @@ USB controller for my monitor LED strip.
 
 #### Upload
 
-Copy binary to USB storage device.
+Copy binary to USB storage device, use VS Code tasks.
 
 #### Console UART
+
+Use VS Code tasks.
 
     mbed-tools sterm -p /dev/ttyACM0
 
