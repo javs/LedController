@@ -61,6 +61,8 @@
         "typeinfo": "cpp",
         "mstd_atomic": "c",
         "queue": "c",
-        "mstd_cstddef": "cpp"
+        "mstd_cstddef": "cpp",
+        "mstd_iterator": "cpp",
+        "span": "cpp"
     }
 }

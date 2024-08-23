@@ -5,6 +5,7 @@ set(MBED_CONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "")
 set(APP_TARGET device)
 
 set(CMAKE_CXX_STANDARD 20 CACHE STRING "")
+
 include(${MBED_PATH}/tools/cmake/app.cmake)
 
 project(${APP_TARGET})
@@ -20,6 +21,7 @@ add_executable(${APP_TARGET}
     src/led_controller.cpp
     src/settings.cpp
     src/usb_led_device.cpp
+    src/apds9960_driver.cpp
 )
 
 target_include_directories(${APP_TARGET}
