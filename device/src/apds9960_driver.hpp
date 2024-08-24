@@ -85,6 +85,8 @@ class APDS9960Driver {
 
     //! Read 1 byte register
     bool ReadReg(uint8_t reg, uint8_t& result);
+    //! Read 2 byte register
+    bool ReadReg(uint8_t op, uint16_t& result);
     //! Write 1 byte register
     bool WriteReg(uint8_t reg, uint8_t data);
 
@@ -93,4 +95,13 @@ public:
 
     //! Detects and inits device
     bool Init(bool set_defaults = true);
+
+    struct ColorSample {
+        uint16_t clear;
+        uint16_t red;
+        uint16_t green;
+        uint16_t blue;
+    };
+
+    bool GetColorData(ColorSample& color);
 };
