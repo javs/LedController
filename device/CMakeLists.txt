@@ -22,6 +22,8 @@ add_executable(${APP_TARGET}
     src/settings.cpp
     src/usb_led_device.cpp
     src/apds9960_driver.cpp
+    src/led_curve.cpp
+    src/temp_manager.cpp
 )
 
 target_include_directories(${APP_TARGET}

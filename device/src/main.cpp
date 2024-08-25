@@ -7,6 +7,7 @@
 #include "settings.hpp"
 #include "usb_led_device.hpp"
 #include "apds9960_driver.hpp"
+#include "temp_manager.hpp"
 
 using namespace LEDs::Common;
 
@@ -26,6 +27,8 @@ int main()
 
     // Both pins are on the same timer by default, use the alt mode of one
     LEDController controller { PC_1, PB_0_ALT0 };
+
+    TempManager temp_manager {controller, light_sensor};
 
     // Blocks until host connection completes
     USBLEDDevice usb {controller};
