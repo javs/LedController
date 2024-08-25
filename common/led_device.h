@@ -32,6 +32,7 @@ namespace LEDs::Common {
         GetLEDState,        //!< Sent/Received to get state. Received when power limit enforced.
         SetLEDState,        //!< Sent/Received to set state. Response confirms state.
         UserLEDState,       //!< Received when state is set by a device user action (e.g. button).
+        SetTime,            //!< Sent to set current local time clock of device.
     };
 
     //! See https://github.com/obdev/v-usb/blob/master/usbdrv/USB-IDs-for-free.txt

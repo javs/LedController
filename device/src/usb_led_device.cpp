@@ -1,5 +1,6 @@
 #include <cstdio>
 
+#include <mbed.h>
 #include <events/mbed_events.h>
 #include <usb/usb_phy_api.h>
 
@@ -65,6 +66,13 @@ void USBLEDDevice::report_rx()
 
                     // Respond back with the same state set
                     SendUSBMessage(USBMessageTypes::SetLEDState, state);
+                    break;
+                }
+                case USBMessageTypes::SetTime:
+                {
+                    auto t = reinterpret_cast<time_t>(input_report.data + sizeof(USBMessageTypes));
+                    
+                    set_time(t);
                     break;
                 }
                 default:
