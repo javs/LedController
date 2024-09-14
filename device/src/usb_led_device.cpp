@@ -1,6 +1,5 @@
 #include <cstdio>
 
-#include <mbed.h>
 #include <events/mbed_events.h>
 #include <usb/usb_phy_api.h>
 
@@ -24,7 +23,7 @@ USBLEDDevice::USBLEDDevice(ILEDController& controller)
 
     using namespace std::placeholders;
     ILEDController::OnStateChanged delegate =
-        std::bind(&USBLEDDevice::OnControllerStateChanged, this, _1, _2);
+        std::bind(&USBLEDDevice::OnControllerStateChanged, this, _1);
     controller.SetEventDelegate(delegate);
 
     connect();
@@ -68,13 +67,6 @@ void USBLEDDevice::report_rx()
                     SendUSBMessage(USBMessageTypes::SetLEDState, state);
                     break;
                 }
-                case USBMessageTypes::SetTime:
-                {
-                    auto t = reinterpret_cast<time_t>(input_report.data + sizeof(USBMessageTypes));
-                    
-                    set_time(t);
-                    break;
-                }
                 default:
                     printf("Invalid USB message: %i\n", static_cast<int>(message_type));
             }
@@ -99,10 +91,7 @@ void USBLEDDevice::SendUSBMessage(USBMessageTypes id, LEDState state)
     send(&output_report);
 }
 
-void USBLEDDevice::OnControllerStateChanged(bool user, const LEDs::Common::LEDState& state)
+void USBLEDDevice::OnControllerStateChanged(const LEDs::Common::LEDState& state)
 {
-    SendUSBMessage(
-        user ? USBMessageTypes::UserLEDState : USBMessageTypes::GetLEDState,
-        state
-        );
+    SendUSBMessage(USBMessageTypes::GetLEDState, state);
 }

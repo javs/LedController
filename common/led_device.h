@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctime>
 #include <cstdint>
 
 //! Types common to both device and host
@@ -15,15 +16,12 @@ namespace LEDs::Common {
      * \note: packed for transmission via USB.
      */
     struct LEDState {
-        bool                on;     //!< LEDs ON/OFF
-        RawLEDComponentType warm;   //!< 0: warm component off, max: warm component at full brightness
-        RawLEDComponentType cool;   //!< 0: cool component off, max: cool component at full brightness
-
-        bool operator==(const LEDState& rhs) const {
-            return on == rhs.on
-                && warm == rhs.warm
-                && cool == rhs.cool; 
-        };
+        time_t              current_time;   //!< Current wall localtime clock
+        bool                on;             //!< LEDs ON/OFF
+        bool                user;           //!< On/Off is currently overriden by a user
+        bool                auto_levels;    //!< Warmth and Brightness is controlled by device
+        RawLEDComponentType warm;           //!< 0: warm component off, max: warm component at full brightness
+        RawLEDComponentType cool;           //!< 0: cool component off, max: cool component at full brightness
     };
     #pragma pack(pop)
 
@@ -31,8 +29,6 @@ namespace LEDs::Common {
     enum class USBMessageTypes : uint8_t {
         GetLEDState,        //!< Sent/Received to get state. Received when power limit enforced.
         SetLEDState,        //!< Sent/Received to set state. Response confirms state.
-        UserLEDState,       //!< Received when state is set by a device user action (e.g. button).
-        SetTime,            //!< Sent to set current local time clock of device.
     };
 
     //! See https://github.com/obdev/v-usb/blob/master/usbdrv/USB-IDs-for-free.txt

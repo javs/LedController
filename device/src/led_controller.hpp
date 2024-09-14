@@ -20,11 +20,13 @@ class LEDController : public ILEDController
 
     LEDComponent m_Cool;
     LEDComponent m_Warm;
-    mbed::InterruptIn m_Button {BUTTON1};
+    bool m_User {false};
+    mbed::InterruptIn m_Button;
     int m_LimitsTimer {0};
     OnStateChanged m_ChangedDelegate{};
 
-    void UpdateLEDs();
+    //! \param notify issue OnStateChanged if true
+    void UpdateLEDs(bool notify);
 
     //! Ensures that the LEDs are not driven at high power for longer than permitted
     void EnsureLimits();
@@ -33,12 +35,14 @@ class LEDController : public ILEDController
     bool InHighPower();
 
 public:
-    LEDController(PinName cool_pin, PinName warm_pin);
+    explicit LEDController(PinName cool_pin, PinName warm_pin, PinName user_button_pin);
+    LEDController(const LEDController&) = delete;
 
+    //! User toggled on/off
     void ToggleOn();
 
     LEDs::Common::LEDState GetState() const override;
-    void SetState(const LEDs::Common::LEDState&) override;
+    void SetState(LEDs::Common::LEDState&) override;
 
     void SetEventDelegate(OnStateChanged& delegate) override;
 };

@@ -27,5 +27,5 @@ private:
 
     void report_rx() override;
 
-    void OnControllerStateChanged(bool user, const LEDs::Common::LEDState& state);
+    void OnControllerStateChanged(const LEDs::Common::LEDState& state);
 };
