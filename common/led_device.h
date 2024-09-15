@@ -6,8 +6,8 @@
 //! Types common to both device and host
 namespace LEDs::Common {
 
-    const uint8_t DeviceVersionMajor = 1; //! Major version of the device code
-    const uint8_t DeviceVersionMinor = 3; //! Minor version of the device code
+    const uint8_t DeviceVersionMajor = 2; //! Major version of the device code
+    const uint8_t DeviceVersionMinor = 0; //! Minor version of the device code
 
     using RawLEDComponentType = uint16_t;
 
