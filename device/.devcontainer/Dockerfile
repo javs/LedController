@@ -36,4 +36,3 @@ USER root
 RUN python -m pip install --break-system-packages \
     jinja2 \
     mbed-tools
-

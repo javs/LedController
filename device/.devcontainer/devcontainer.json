@@ -1,0 +1,10 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+{
+	"name": "leds-device-code",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	// pass the device to the container to use mbed cli serial console
+	// fix groups for rootless podman
+	"runArgs": ["--device=/dev/ttyACM0", "--group-add=keep-groups", "--rm"]
+}
