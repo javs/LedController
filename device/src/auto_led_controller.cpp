@@ -17,8 +17,9 @@ AutoLEDController::AutoLEDController(PinName cool_pin, PinName warm_pin,
     PinName user_button_pin, APDS9960Driver& light_sensor)
     : LEDController(cool_pin, warm_pin, user_button_pin)
     , m_LightSensor(light_sensor)
+    , m_Curve(LEDCurve::Standard())
 {
-    SetupTimer();
+    AutoUpdate();
 }
 
 AutoLEDController::~AutoLEDController()
@@ -54,9 +55,9 @@ void AutoLEDController::SetState(LEDState& state)
     if (m_AutoLevels)
     {
         auto curve_state = m_Curve.GetLEDAtCurrentTime();
-        state.warm = curve_state.warm;
-        state.cool = curve_state.cold;
-
+        state.warm = curve_state.warm * std::numeric_limits<RawLEDComponentType>::max();
+        state.cool = curve_state.cold * std::numeric_limits<RawLEDComponentType>::max();
+        
         APDS9960Driver::ColorSample color;
         m_LightSensor.GetColorData(color);
 
@@ -77,8 +78,6 @@ void AutoLEDController::SetupTimer()
     {
         if (!m_Timer)
             m_Timer = queue->call_every(5s, this, &AutoLEDController::AutoUpdate);
-        
-        AutoUpdate();
     } else {
         if (m_Timer)
         {

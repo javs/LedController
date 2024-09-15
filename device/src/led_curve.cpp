@@ -11,33 +11,33 @@ LEDCurve LEDCurve::Standard()
 	LEDCurve c{};
 
 	c.AddStep(0, 0, LEDCurve::LEDControl{
-		.warm = 50,
-		.cold = 10,
+		.warm = 0.5,
+		.cold = 0.1,
 		});
 
 	c.AddStep(5, 0, LEDCurve::LEDControl{
-		.warm = 50,
-		.cold = 40,
+		.warm = 0.5,
+		.cold = 0.4,
 		});
 
 	c.AddStep(10, 0, LEDCurve::LEDControl{
-		.warm = 40,
-		.cold = 60,
+		.warm = 0.4,
+		.cold = 0.6,
 		});
 
 	c.AddStep(11, 0, LEDCurve::LEDControl{
-		.warm = 45,
-		.cold = 65,
+		.warm = 0.45,
+		.cold = 0.65,
 		});
 
 	c.AddStep(18, 0, LEDCurve::LEDControl{
-		.warm = 45,
-		.cold = 65,
+		.warm = 0.45,
+		.cold = 0.65,
 		});
 
 	c.AddStep(23, 30, LEDCurve::LEDControl{
-		.warm = 50,
-		.cold = 10,
+		.warm = 0.5,
+		.cold = 0.1,
 		});
 
 	return c;

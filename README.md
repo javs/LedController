@@ -26,8 +26,19 @@ USB controller for my monitor LED strip.
 
 #### Linux
 
-    # Turn off
-    sudo hidapitester --vidpid 16C0/05DF -l 6 --open --send-output 1,0,0x10,0x10,0xFF,0xFF --read-input
+    # Turn on
+    sudo hidapitester --vidpid 16C0/05DF --open \
+        -l 17 --send-output 0,1,0x90,0x12,0xE7,0x66,0x00,0x00,0x00,0x00,1,0,1,0xFF,0xFF,0xFF,0xFF \
+        -l 16 --read-input 0
+
+    # Get
+    sudo hidapitester --vidpid 16C0/05DF --open \
+        -l 17 --send-output 0,0,0x90,0x12,0xE7,0x66,0x00,0x00,0x00,0x00,1,0,1,0xFF,0xFF,0xFF,0xFF \
+        -l 16 --read-input 0
+
+    # Notifications
+    sudo hidapitester --vidpid 16C0/05DF --open \
+        -l 16 -t 10000 --read-input 0
 
 ### Device
 
