@@ -1,4 +1,6 @@
 #include <cstdio>
+
+#include <mbed.h>
 #include <events/mbed_events.h>
 #include <DigitalOut.h>
 
@@ -12,6 +14,9 @@ using namespace LEDs::Common;
 
 int main()
 {
+    // Set an initial time during the afternoon (17:00), until it's updated by host
+    set_time(1726419600);
+
     EventQueue *queue = mbed::mbed_event_queue();
 
     mbed::DigitalOut led {LED1, 1};
