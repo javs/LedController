@@ -88,7 +88,7 @@ void USBLEDDevice::SendUSBMessage(USBMessageTypes id, LEDState state)
     offset += sizeof(USBMessageTypes::GetLEDState);
     *(reinterpret_cast<LEDState*>(offset)) = state;
 
-    send(&output_report);
+    send_nb(&output_report);
 }
 
 void USBLEDDevice::OnControllerStateChanged(const LEDs::Common::LEDState& state)
