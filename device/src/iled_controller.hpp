@@ -15,4 +15,7 @@ struct ILEDController
 
     //! Calls delegate when state changes due to controller logic.
     virtual void SetEventDelegate(OnStateChanged& delegate) = 0;
+
+    // TODO: separate interface or mixin
+    virtual void SetLightSensorRange(const LEDs::Common::LightSensorRange& range) = 0;
 };

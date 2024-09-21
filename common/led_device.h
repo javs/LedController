@@ -7,7 +7,7 @@
 namespace LEDs::Common {
 
     const uint8_t DeviceVersionMajor = 2; //! Major version of the device code
-    const uint8_t DeviceVersionMinor = 0; //! Minor version of the device code
+    const uint8_t DeviceVersionMinor = 1; //! Minor version of the device code
 
     using RawLEDComponentType = uint16_t;
 
@@ -23,12 +23,19 @@ namespace LEDs::Common {
         RawLEDComponentType warm;           //!< 0: warm component off, max: warm component at full brightness
         RawLEDComponentType cool;           //!< 0: cool component off, max: cool component at full brightness
     };
+
+    //! Calibration range for light sensor adjustment of brightness.
+    struct LightSensorRange {
+        uint16_t            max;            //!< Sensor reading for minimum brightness.
+        uint16_t            min;            //!< Sensor reading for maximum brightness.
+    };
     #pragma pack(pop)
 
     //! Message IDs sent/received via usb, from the device perspective.
     enum class USBMessageTypes : uint8_t {
-        GetLEDState,        //!< Sent/Received to get state. Received when power limit enforced.
+        GetLEDState,        //!< Sent/Received to get state. Received when power limit enforced or blue button pressed.
         SetLEDState,        //!< Sent/Received to set state. Response confirms state.
+        SetLightSensorRange,//!< Sent/Received to change light sensor range. Response confirms state.
     };
 
     //! See https://github.com/obdev/v-usb/blob/master/usbdrv/USB-IDs-for-free.txt

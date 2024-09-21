@@ -60,13 +60,22 @@ void USBLEDDevice::report_rx()
                 case USBMessageTypes::SetLEDState:
                 {
                     auto state =
-                        *(reinterpret_cast<LEDState*>(input_report.data + sizeof(USBMessageTypes)));
-                    m_Controller.SetState(state);
+                        reinterpret_cast<LEDState*>(input_report.data + sizeof(USBMessageTypes));
+                    m_Controller.SetState(*state);
 
                     // Respond back with the same state set
-                    SendUSBMessage(USBMessageTypes::SetLEDState, state);
+                    SendUSBMessage(USBMessageTypes::SetLEDState, *state);
                     break;
                 }
+                case USBMessageTypes::SetLightSensorRange:
+                {
+                    auto range = 
+                        reinterpret_cast<LightSensorRange*>(input_report.data + sizeof(USBMessageTypes));
+                    
+                    m_Controller.SetLightSensorRange(*range);
+                    SendUSBMessage(USBMessageTypes::SetLightSensorRange, *range);
+                }
+                break;
                 default:
                     printf("Invalid USB message: %i\n", static_cast<int>(message_type));
             }
@@ -74,7 +83,8 @@ void USBLEDDevice::report_rx()
     }
 }
 
-void USBLEDDevice::SendUSBMessage(USBMessageTypes id, LEDState state)
+template<typename TBody>
+void USBLEDDevice::SendUSBMessage(USBMessageTypes id, const TBody& state)
 {
     HID_REPORT output_report{
         .length = USBReportOutputLength,
@@ -85,8 +95,8 @@ void USBLEDDevice::SendUSBMessage(USBMessageTypes id, LEDState state)
     uint8_t* offset = output_report.data;
     *(reinterpret_cast<USBMessageTypes*>(offset)) = id;
 
-    offset += sizeof(USBMessageTypes::GetLEDState);
-    *(reinterpret_cast<LEDState*>(offset)) = state;
+    offset += sizeof(USBMessageTypes);
+    *(reinterpret_cast<TBody*>(offset)) = state;
 
     send_nb(&output_report);
 }

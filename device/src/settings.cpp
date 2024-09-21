@@ -36,7 +36,7 @@ Settings& Settings::get()
     return instance;
 }
 
-void Settings::PrintDiags()
+void Settings::PrintDiags() const
 {
     printf("-- Flash Diagnostics --\n");
 
@@ -65,9 +65,15 @@ void Settings::ReadSettings()
 
     if (key_store->get("cool", &m_SettingCool, sizeof(m_SettingCool)) != MBED_SUCCESS)
         SetCool(m_SettingCool);
+    
+    if (key_store->get("ls_min", &m_SettingLSMin, sizeof(m_SettingLSMin)) != MBED_SUCCESS)
+        SetLightSensorMin(m_SettingLSMin);
+
+    if (key_store->get("ls_max", &m_SettingLSMax, sizeof(m_SettingLSMax)) != MBED_SUCCESS)
+        SetLightSensorMax(m_SettingLSMax);
 }
 
-bool Settings::GetOn()
+bool Settings::GetOn() const
 {
     return m_SettingOn;
 }
@@ -82,7 +88,7 @@ void Settings::SetOn(bool on)
         printf("Failed to write on setting: %i", res);
 }
 
-RawLEDComponentType Settings::GetWarm()
+RawLEDComponentType Settings::GetWarm() const
 {
     return m_SettingWarm;
 }
@@ -97,7 +103,7 @@ void Settings::SetWarm(RawLEDComponentType warm)
         printf("Failed to write warm setting: %i", res);
 }
 
-RawLEDComponentType Settings::GetCool()
+RawLEDComponentType Settings::GetCool() const
 {
     return m_SettingCool;
 }
@@ -110,4 +116,34 @@ void Settings::SetCool(RawLEDComponentType cool)
 
     if (res != MBED_SUCCESS)
         printf("Failed to write cool setting: %i", res);
+}
+
+uint16_t Settings::GetLightSensorMin() const
+{
+    return m_SettingLSMin;
+}
+
+void Settings::SetLightSensorMin(uint16_t val)
+{
+    m_SettingLSMin = val;
+    
+    auto res = key_store->set("ls_min", &val, sizeof(val), 0);
+
+    if (res != MBED_SUCCESS)
+        printf("Failed to write ls_min setting: %i", res);
+}
+
+uint16_t Settings::GetLightSensorMax() const
+{
+    return m_SettingLSMax;
+}
+
+void Settings::SetLightSensorMax(uint16_t val)
+{
+    m_SettingLSMax = val;
+    
+    auto res = key_store->set("ls_max", &val, sizeof(val), 0);
+
+    if (res != MBED_SUCCESS)
+        printf("Failed to write ls_max setting: %i", res);
 }

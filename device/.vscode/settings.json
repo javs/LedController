@@ -63,6 +63,13 @@
         "queue": "c",
         "mstd_cstddef": "cpp",
         "mstd_iterator": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "charconv": "cpp",
+        "set": "cpp",
+        "optional": "cpp",
+        "format": "cpp",
+        "iomanip": "cpp",
+        "sstream": "cpp",
+        "variant": "cpp"
     }
 }

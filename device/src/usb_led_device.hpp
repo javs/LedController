@@ -19,7 +19,8 @@ public:
     ~USBLEDDevice();
 
     //! Send a usb message with the indicated id and state.
-    void SendUSBMessage(LEDs::Common::USBMessageTypes id, LEDs::Common::LEDState state);
+    template<typename TBody>
+    void SendUSBMessage(LEDs::Common::USBMessageTypes id, const TBody& state);
 
 private:
 

@@ -20,7 +20,7 @@ bool APDS9960Driver::Init(bool set_defaults)
         WriteReg(REG_WTIME, 0xFF);
         WriteReg(REG_CONFIG1, REG_CONFIG1_BASE | CONFIG1_BIT_WLONG);
         // Max color integration time
-        WriteReg(REG_ATIME, 0xA0);
+        WriteReg(REG_ATIME, 0xAF);
         // 4x color gain
         WriteReg(REG_CONTROL, 1); // TODO: extract
     }

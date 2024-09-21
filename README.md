@@ -40,6 +40,11 @@ USB controller for my monitor LED strip.
     sudo hidapitester --vidpid 16C0/05DF --open \
         -l 16 -t 10000 --read-input 0
 
+    # Set Light Sensor Range
+    sudo hidapitester --vidpid 16C0/05DF --open \
+        -l 17 --send-output 0,2,0x00,0x61,0x00,0x05,0,0,0,0,0,0,0,0,0,0,0 \
+        -l 16 --read-input 0
+
 ### Device
 
 #### Container
