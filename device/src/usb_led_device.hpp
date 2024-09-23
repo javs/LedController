@@ -29,4 +29,5 @@ private:
     void report_rx() override;
 
     void OnControllerStateChanged(const LEDs::Common::LEDState& state);
+    void UpdateTime(time_t current_time);
 };

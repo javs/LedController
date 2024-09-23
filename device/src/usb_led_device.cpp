@@ -1,5 +1,6 @@
 #include <cstdio>
 
+#include <mbed.h>
 #include <events/mbed_events.h>
 #include <usb/usb_phy_api.h>
 
@@ -53,6 +54,11 @@ void USBLEDDevice::report_rx()
             {
                 case USBMessageTypes::GetLEDState:
                 {
+                    auto sent_state =
+                        reinterpret_cast<LEDState*>(input_report.data + sizeof(USBMessageTypes));
+                    
+                    UpdateTime(sent_state->current_time);
+
                     auto state = m_Controller.GetState();
                     SendUSBMessage(USBMessageTypes::SetLEDState, state);
                     break;
@@ -61,6 +67,8 @@ void USBLEDDevice::report_rx()
                 {
                     auto state =
                         reinterpret_cast<LEDState*>(input_report.data + sizeof(USBMessageTypes));
+
+                    UpdateTime(state->current_time);
                     m_Controller.SetState(*state);
 
                     // Respond back with the same state set
@@ -81,6 +89,12 @@ void USBLEDDevice::report_rx()
             }
         });
     }
+}
+
+void USBLEDDevice::UpdateTime(time_t current_time)
+{
+    if (current_time != 0 && difftime(current_time, time(nullptr)) > 5)
+        set_time(current_time);
 }
 
 template<typename TBody>

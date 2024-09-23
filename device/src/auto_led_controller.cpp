@@ -1,7 +1,5 @@
 #include "auto_led_controller.hpp"
 
-#include <mbed.h>
-
 #include <chrono>
 #include <events/mbed_events.h>
 
@@ -58,9 +56,6 @@ uint16_t AutoLEDController::GetLightSensorRawValue()
 void AutoLEDController::SetState(LEDState& state)
 {
     m_AutoLevels = state.auto_levels;
-
-    if (difftime(time(nullptr), state.current_time) > 5)
-        set_time(state.current_time);
 
     if (m_AutoLevels)
     {
