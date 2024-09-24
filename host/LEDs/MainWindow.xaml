@@ -8,14 +8,19 @@
     mc:Ignorable="d"
     Activated="Window_Activated">
 
-    <Border
-        BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}" BorderThickness="1"
-        Width="Auto" HorizontalAlignment="Center"
-        Height="Auto" VerticalAlignment="Center"
-        >
+    <!--<Border
+    BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}" BorderThickness="1"
+    Width="Auto" HorizontalAlignment="Center"
+    Height="Auto" VerticalAlignment="Center"
+    >-->
         <StackPanel
+            Width="Auto"
+            Height="Auto"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
             Padding="8"
             Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+            x:Name="RootElement"
             >
 
             <!--<StackPanel.Background>
@@ -27,7 +32,7 @@
             <Grid ColumnSpacing="10" RowSpacing="5" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width = "Auto" />
-                    <ColumnDefinition Width = "300" />
+                    <ColumnDefinition Width = "350" />
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
@@ -41,11 +46,12 @@
                 <Slider Grid.Row="1" Grid.Column="1" x:Name="cool_slider" VerticalAlignment="Center" ValueChanged="cool_slider_ValueChanged"/>
             </Grid>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <ToggleSwitch x:Name="on_off" HorizontalAlignment="Center" Toggled="on_off_Toggled"/>
-                <ToggleSwitch x:Name="auto_control" HorizontalAlignment="Right" Toggled="auto_control_Toggled" OnContent="Auto" OffContent="Manual"/>
+            <StackPanel Orientation="Horizontal" Width="Auto">
+                <ToggleSwitch x:Name="on_off" Toggled="on_off_Toggled" MinWidth="120"/>
+                <ToggleSwitch x:Name="auto_idle" Toggled="auto_idle_Toggled" OnContent="Auto Idle" OffContent="User" MinWidth="120"/>
+                <ToggleSwitch x:Name="auto_levels" Toggled="auto_levels_Toggled" OnContent="Auto Levels" OffContent="Fixed" MinWidth="120"/>
             </StackPanel>
 
         </StackPanel>
-    </Border>
+    <!--</Border>-->
 </Window>

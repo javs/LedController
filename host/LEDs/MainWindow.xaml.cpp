@@ -31,8 +31,26 @@ namespace winrt::LEDs::implementation
         presenter.IsResizable(false);
         presenter.IsMaximizable(false);
         presenter.SetBorderAndTitleBar(true, false);
+        ExtendsContentIntoTitleBar(true);
 
         const auto hwnd = GetHWND();
+
+        // Size to contents
+        m_size_token = RootElement().SizeChanged([this](IInspectable const&, SizeChangedEventArgs const&)
+            {
+                RootElement().SizeChanged(m_size_token);
+
+                const auto content_size = this->Content().ActualSize();
+                const auto hwnd = GetHWND();
+                const auto dpi = ::GetDpiForWindow(hwnd);
+                const float scalingFactor = static_cast<float>(dpi) / 96;
+                const auto app_window = GetAppWindow();
+
+                app_window.Resize({
+                    static_cast<int32_t>(content_size.x * scalingFactor),
+                    static_cast<int32_t>(content_size.y * scalingFactor),
+                    });
+            });
 
         // Do not show up in taskbar
         ::SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
@@ -87,29 +105,10 @@ namespace winrt::LEDs::implementation
         return app_window;
     }
 
-    void MainWindow::DPIAwareResizeClient(float height, float width)
-    {
-        const auto hwnd = GetHWND();
-        const auto dpi = ::GetDpiForWindow(hwnd);
-        const float scalingFactor = static_cast<float>(dpi) / 96;
-        const auto app_window = GetAppWindow();
-
-        app_window.Resize({
-            static_cast<int32_t>(width * scalingFactor),
-            static_cast<int32_t>(height * scalingFactor),
-            });
-    }
-
     void MainWindow::Window_Activated(IInspectable const&, WindowActivatedEventArgs const& args)
     {
         if (args.WindowActivationState() == WindowActivationState::Deactivated)
             GetAppWindow().Hide();
-        else
-        {
-            // Resize to contents
-            auto content_size = this->Content().ActualSize();
-            DPIAwareResizeClient(content_size.y, content_size.x);
-        }
     }
 
     void MainWindow::SendLEDsStateChangedEvent()
@@ -117,27 +116,25 @@ namespace winrt::LEDs::implementation
         if (m_block_events)
             return;
 
-        // TODO make a struct ?
+        // TODO move the struct so it can be used here (but there is the idl stuff, ugh)
         m_LEDsStateChanged(
             on_off().IsOn(),
+            auto_idle().IsOn(),
+            auto_levels().IsOn(),
             static_cast<float>(warm_slider().Value()) / 100.0f,
-            static_cast<float>(cool_slider().Value()) / 100.0f,
-            auto_control().IsOn()
+            static_cast<float>(cool_slider().Value()) / 100.0f
         );
     }
 
-    void MainWindow::SetState(bool on, float warm, float cool)
+    void MainWindow::SetState(bool on, bool auto_idle, bool auto_levels, float warm, float cool)
     {
         m_block_events = true;
         on_off().IsOn(on);
+        this->auto_idle().IsOn(auto_idle);
+        this->auto_levels().IsOn(auto_levels);
         warm_slider().Value(warm * 100.0f);
         cool_slider().Value(cool * 100.0f);
         m_block_events = false;
-    }
-
-    void MainWindow::SetAutomatic(bool on)
-    {
-        auto_control().IsOn(on);
     }
 
     winrt::event_token MainWindow::LEDsStateChanged(LEDsStateChangedEventHandler const& handler)
@@ -160,7 +157,14 @@ namespace winrt::LEDs::implementation
         SendLEDsStateChangedEvent();
     }
 
-    void MainWindow::auto_control_Toggled(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    void MainWindow::auto_idle_Toggled(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    {
+        if (auto_idle().IsOn())
+            on_off().IsOn(true);
+        SendLEDsStateChangedEvent();
+    }
+
+    void MainWindow::auto_levels_Toggled(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
         SendLEDsStateChangedEvent();
     }
@@ -170,4 +174,3 @@ namespace winrt::LEDs::implementation
         SendLEDsStateChangedEvent();
     }
 }
-

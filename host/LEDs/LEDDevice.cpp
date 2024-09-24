@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <stdexcept>
+#include <chrono>
 
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Streams.h>
@@ -10,6 +11,7 @@
 
 
 using namespace std;
+using namespace std::chrono;
 using namespace winrt;
 
 using namespace Windows::Devices::HumanInterfaceDevice;
@@ -23,18 +25,27 @@ using namespace winrt::Microsoft::UI::Dispatching;
 using namespace LEDs::Common;
 
 
-LEDDevice::State::State(LEDs::Common::LEDState& usb_state)
-    : on(usb_state.on)
-    , warm(static_cast<float>(usb_state.warm) / numeric_limits<RawLEDComponentType>::max())
-    , cool(static_cast<float>(usb_state.cool) / numeric_limits<RawLEDComponentType>::max())
+LEDDevice::State LEDDevice::State::FromUSB(const LEDs::Common::LEDState& usb_state)
 {
+    return {
+        .on = usb_state.on,
+        .user = usb_state.user,
+        .auto_levels = usb_state.auto_levels,
+        .warm = static_cast<float>(usb_state.warm) / numeric_limits<RawLEDComponentType>::max(),
+        .cool = static_cast<float>(usb_state.cool) / numeric_limits<RawLEDComponentType>::max(),
+    };
 }
 
-LEDDevice::State::State(bool on, float warm, float cool)
-    : on(on)
-    , warm(warm)
-    , cool(cool)
+::LEDs::Common::LEDState LEDDevice::State::ToUSB() const
 {
+    return {
+        .current_time = 0,
+        .on = on,
+        .user = user,
+        .auto_levels = auto_levels,
+        .warm = static_cast<RawLEDComponentType>(warm * std::numeric_limits<RawLEDComponentType>::max()),
+        .cool = static_cast<RawLEDComponentType>(cool * std::numeric_limits<RawLEDComponentType>::max()),
+    };
 }
 
 LEDDevice::LEDDevice(DispatcherQueue dispatcher)
@@ -124,9 +135,6 @@ fire_and_forget LEDDevice::OnDeviceAdded(DeviceWatcher sender, DeviceInformation
 
     if (m_connected_handler)
         m_connected_handler(true);
-
-    // refresh current state
-    co_await RequestLEDs();
 }
 
 fire_and_forget LEDDevice::OnDeviceRemoved(DeviceWatcher sender, DeviceInformationUpdate deviceUpdate)
@@ -146,47 +154,66 @@ fire_and_forget LEDDevice::OnDeviceRemoved(DeviceWatcher sender, DeviceInformati
         m_connected_handler(false);
 }
 
-IAsyncOperation<bool> LEDDevice::SetLEDs(bool on, float warm, float cool)
+IAsyncOperation<bool> LEDDevice::RequestLEDs()
 {
-    const LEDState state{
-        on,
-        static_cast<RawLEDComponentType>(warm * std::numeric_limits<RawLEDComponentType>::max()),
-        static_cast<RawLEDComponentType>(cool * std::numeric_limits<RawLEDComponentType>::max()),
-    };
+    LEDState state{};
+    state.current_time = GetTimeForDevice();
 
-    co_return co_await SetLEDs(state);
+    co_return co_await SendOp(USBMessageTypes::GetLEDState, state);
 }
 
-IAsyncOperation<bool> LEDDevice::SetLEDs(float warm, float cool)
+IAsyncOperation<bool> LEDDevice::SetIdle(bool idle)
 {
-    co_return co_await SetLEDs(m_last.on, warm, cool);
-}
+    auto strong_self{ get_strong() };
 
-IAsyncOperation<bool> LEDDevice::SetLEDs(const LEDState& state)
-{
-    // state already matches, or leds are off and there is a change in warmth, silently succeeed
-    if (m_last == state || (!m_last.on && !state.on))
-        co_return true;
+    // Go back to foreground to sync
+    co_await wil::resume_foreground(m_dispatcher);
 
-    if (!co_await SendOp(USBMessageTypes::SetLEDState, state))
+    if (!m_fetched)
         co_return false;
 
-    // TODO: maybe check it set? (compare last with state)
+    auto state{ m_last };
+    if (!state.user)
+    {
+        state.on = !idle;
+        co_return co_await SetLEDs(state);
+    }
 
     co_return true;
 }
 
-IAsyncOperation<bool> LEDDevice::RequestLEDs()
+IAsyncOperation<bool> LEDDevice::SetLEDs(LEDState& state)
 {
-    // get op ignores state
-    co_return co_await SendOp(USBMessageTypes::GetLEDState, {});
+    if (!m_fetched)
+        co_return false;
+
+    state.current_time = GetTimeForDevice();
+
+    co_return co_await SendOp(USBMessageTypes::SetLEDState, state);
 }
 
-IAsyncOperation<bool> LEDDevice::SetOn(bool on)
+IAsyncOperation<bool> LEDDevice::SetLEDs(LEDDevice::State & state)
 {
-    auto state { m_last };
-    state.on = on;
-    co_return co_await SetLEDs(state);
+    auto usb_state = state.ToUSB();
+    co_return co_await SetLEDs(usb_state);
+}
+
+time_t LEDDevice::GetTimeForDevice() const
+{
+    auto now = system_clock::now();
+    auto offset = current_zone()->get_info(now).offset;
+
+    return system_clock::to_time_t(now + offset);
+}
+
+IAsyncOperation<bool> LEDDevice::SetLightSensorRange(uint16_t min, uint16_t max)
+{
+    LightSensorRange new_range{
+        .max = max,
+        .min = min,
+    };
+
+    co_return co_await SendOp(USBMessageTypes::SetLightSensorRange, new_range);
 }
 
 void LEDDevice::ParseInputReport(const HidInputReport& report, USBMessageTypes& msg, LEDState& state)
@@ -197,7 +224,7 @@ void LEDDevice::ParseInputReport(const HidInputReport& report, USBMessageTypes& 
 
     const auto length = report.Data().Length();
     if (length != USBReportInputLength +1) // add a byte for the ID
-        throw runtime_error("Recieved USB Input Report with the wrong length: " + to_string(length));
+        throw runtime_error("Received USB Input Report with the wrong length: " + to_string(length));
 
     const auto id = data_reader.ReadByte();
     if (id != 0)
@@ -228,26 +255,26 @@ fire_and_forget LEDDevice::OnInputReportReceived(HidDevice, HidInputReportReceiv
         case USBMessageTypes::GetLEDState:
         case USBMessageTypes::SetLEDState:
         {
-            // Get/Set are responses to messages sent, so a promise is waiting fullfillment
-            auto local_promise = m_op_promise.lock();
-            if (local_promise)
-                local_promise->set_value(true);
-            // else: response without request, ignore
+            m_last = state;
+            m_fetched = true;
             break;
         }
-        case USBMessageTypes::UserLEDState:
+        case USBMessageTypes::SetLightSensorRange:
         {
-            // UserLEDState is an unsolicited message, ignore promises
             break;
         }
         default:
             throw runtime_error("Unknown USB message received: " + to_string(static_cast<uint8_t>(msg)));
         }
 
-        m_last = state;
+        // Get/Set are responses to messages sent, so a promise is waiting fullfillment
+        auto local_promise = m_op_promise.lock();
+        if (local_promise)
+            local_promise->set_value(true);
+        // else: response without request, ignore
 
         if (m_changed_handler)
-            m_changed_handler(m_last);
+            m_changed_handler(State::FromUSB(m_last));
     }
     catch (exception&)
     {
@@ -258,9 +285,10 @@ fire_and_forget LEDDevice::OnInputReportReceived(HidDevice, HidInputReportReceiv
         else
             throw;
     }
- }
+}
 
-IAsyncOperation<bool> LEDDevice::SendOp(USBMessageTypes msg, const LEDState& state)
+template<typename TData>
+IAsyncOperation<bool> LEDDevice::SendOp(USBMessageTypes msg, const TData& state)
 {
     // dont allow simultaneous ops
     if (m_op_promise.lock())
@@ -287,7 +315,8 @@ IAsyncOperation<bool> LEDDevice::SendOp(USBMessageTypes msg, const LEDState& sta
     co_return future.get();
 }
 
-IAsyncOperation<bool> LEDDevice::SendReport(USBMessageTypes msg, const LEDState& state)
+template<typename TData>
+IAsyncOperation<bool> LEDDevice::SendReport(USBMessageTypes msg, const TData& state)
 {
     if (!m_device)
         co_return false;
@@ -298,12 +327,16 @@ IAsyncOperation<bool> LEDDevice::SendReport(USBMessageTypes msg, const LEDState&
 
     dataWriter.ByteOrder(ByteOrder::LittleEndian);
 
-    array_view<const uint8_t> state_view{ reinterpret_cast<const uint8_t*>(&state), sizeof(state) };
+    array_view<const uint8_t> data_view{ reinterpret_cast<const uint8_t*>(&state), sizeof(state) };
 
     // Report Id is always the first byte
     dataWriter.WriteByte(static_cast<uint8_t>(report.Id()));
     dataWriter.WriteByte(static_cast<uint8_t>(msg));
-    dataWriter.WriteBytes(state_view);
+    dataWriter.WriteBytes(data_view);
+
+    // Fill rest of report with zeroes (note windows counts here report id, USBReportOutputLength doesnt)
+    for (unsigned int i = 0; i < (USBReportOutputLength - 1 - data_view.size()); ++i)
+        dataWriter.WriteByte(0);
 
     report.Data(dataWriter.DetachBuffer());
 

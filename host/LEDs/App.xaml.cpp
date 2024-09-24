@@ -49,7 +49,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
             0, 0,
             LR_LOADFROMFILE)));
 
-    THROW_LAST_ERROR_IF_NULL_MSG(icon, "Failed to load app icon %S", TrayIconPath);
+    THROW_LAST_ERROR_IF_NULL_MSG(icon, "Failed to load app icon %wS", TrayIconPath);
 
     tray_icon = std::make_unique<NotifyIcon>(
         module_handle,
@@ -70,10 +70,6 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
     // TODO: use app sdk when fixed: https://github.com/microsoft/WindowsAppSDK/issues/2833
     ::RegisterPowerSettingNotification(tray_icon->GetHWND(), &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
     tray_icon->AddMessageHandler(bind_front(&App::TrayMessageHandler, this));
-
-    window.SetAutomatic(true);
-
-    temp_manager.OnUpdated({ this, &App::OnTempUpdated });
 }
 
 fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
@@ -100,64 +96,36 @@ fire_and_forget App::OnTrayClick(NotifyIcon::MouseButton button)
     }
 }
 
-fire_and_forget App::OnUILEDsChanged(bool on, float warm, float cold, bool automatic)
+fire_and_forget App::OnUILEDsChanged(bool on, bool auto_idle, bool auto_levels, float warm, float cold)
 {
-    temp_manager.Enable(automatic);
+    LEDDevice::State state {
+        .on = on,
+        .user = !auto_idle,
+        .auto_levels = auto_levels,
+        .warm = warm,
+        .cool = cold,
+    };
 
-    if (!automatic)
-        co_await led_device->SetLEDs(on, warm, cold);
-    else
-        ReapplyDevice();
+    co_await led_device->SetLEDs(state);
 }
 
-void App::OnLEDDeviceConnected(bool on)
+fire_and_forget App::OnLEDDeviceConnected(bool on)
 {
-    // a device connected, refresh it based on the expected state
-    if (on)
-        ReapplyDevice();
+    co_await led_device->RequestLEDs();
+    co_await led_device->SetLightSensorRange(0x4000, 0x8000);
+    co_await led_device->SetIdle(false);
 }
 
 fire_and_forget App::OnLEDDeviceChanged(LEDDevice::State state)
 {
     co_await wil::resume_foreground(window.DispatcherQueue());
 
-    window.SetState(state.on, state.warm, state.cool);
+    window.SetState(state.on, !state.user, state.auto_levels, state.warm, state.cool);
 }
 
-void App::SetIdle(bool new_idle)
+fire_and_forget App::SetIdle(bool new_idle)
 {
-    idle = new_idle;
-
-    ReapplyDevice();
-}
-
-fire_and_forget App::OnTempUpdated(float warm, float cool)
-{
-    bool result = false;
-    try
-    {
-        result = co_await led_device->SetLEDs(!idle, warm, cool);
-    }
-    catch (...) {} // retry on any exception
-
-    // On failure, try once more
-    if (!result)
-    {
-        co_await 500ms;
-        try {
-            co_await led_device->SetLEDs(!idle, warm, cool);
-        } catch (...) {}; // give up until next update
-    }
-}
-
-fire_and_forget App::ReapplyDevice()
-{
-    // Only update the temp manager for auto mode, otherwise keep device as is
-    // Only auto mode can get out sync, manual mode just uses the current device reported state
-
-    // temp_manager requires main thread
-    co_await wil::resume_foreground(window.DispatcherQueue());
-    temp_manager.Update();
+    co_await led_device->SetIdle(new_idle);
 }
 
 LRESULT App::TrayMessageHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam)
