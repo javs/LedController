@@ -6,7 +6,6 @@
 
 #include "NotifyIcon.h"
 #include "LEDDevice.h"
-#include "TempManager.h"
 
 namespace winrt::LEDs::implementation
 {
@@ -19,16 +18,13 @@ namespace winrt::LEDs::implementation
     private:
         fire_and_forget OnTrayClick(NotifyIcon::MouseButton button);
 
-        void OnLEDDeviceConnected(bool connected);
+        fire_and_forget OnLEDDeviceConnected(bool connected);
         fire_and_forget OnLEDDeviceChanged(LEDDevice::State state);
 
-        fire_and_forget OnUILEDsChanged(bool on, float warm, float cold, bool automatic);
+        fire_and_forget OnUILEDsChanged(bool on, bool auto_idle, bool auto_levels, float warm, float cold);
         LRESULT TrayMessageHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-        fire_and_forget OnTempUpdated(float warm, float cool);
-
-        fire_and_forget ReapplyDevice();
-        void SetIdle(bool new_idle);
+        fire_and_forget SetIdle(bool new_idle);
 
         static const wchar_t* TrayIconPath;
 
@@ -36,7 +32,6 @@ namespace winrt::LEDs::implementation
         winrt::LEDs::MainWindow window {nullptr};
         std::unique_ptr<NotifyIcon> tray_icon {};
         winrt::com_ptr<LEDDevice> led_device {};
-        TempManager temp_manager {};
         bool idle{ false };
     };
 }
