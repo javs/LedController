@@ -113,7 +113,7 @@ fire_and_forget App::OnLEDDeviceConnected(bool on)
 {
     co_await led_device->RequestLEDs();
     co_await led_device->SetLightSensorRange(0x4000, 0x8000);
-    co_await led_device->SetIdle(false);
+    co_await led_device->SetIdle(false); // TODO: move out of here, reconnect on sleep
 }
 
 fire_and_forget App::OnLEDDeviceChanged(LEDDevice::State state)

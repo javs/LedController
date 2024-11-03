@@ -26,23 +26,30 @@ USB controller for my monitor LED strip.
 
 #### Linux
 
+#### Permissions
+
+    # Setup permissions
+    echo 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05df", MODE="0660", TAG+="uaccess"'|sudo tee -a /etc/udev/rules.d/60-leds.rules
+    # Reload
+    sudo udevadm control --reload-rules && sudo udevadm trigger
+
     # Turn on
-    sudo hidapitester --vidpid 16C0/05DF --open \
+    hidapitester --vidpid 16C0/05DF --open \
         -l 17 --send-output 0,1,0x90,0x12,0xE7,0x66,0x00,0x00,0x00,0x00,1,0,1,0xFF,0xFF,0xFF,0xFF \
         -l 16 --read-input 0
 
     # Get
-    sudo hidapitester --vidpid 16C0/05DF --open \
+    hidapitester --vidpid 16C0/05DF --open \
         -l 17 --send-output 0,0,0x90,0x12,0xE7,0x66,0x00,0x00,0x00,0x00,1,0,1,0xFF,0xFF,0xFF,0xFF \
         -l 16 --read-input 0
 
     # Notifications
-    sudo hidapitester --vidpid 16C0/05DF --open \
+    hidapitester --vidpid 16C0/05DF --open \
         -l 16 -t 10000 --read-input 0
 
     # Set Light Sensor Range
-    sudo hidapitester --vidpid 16C0/05DF --open \
-        -l 17 --send-output 0,2,0x00,0x61,0x00,0x05,0,0,0,0,0,0,0,0,0,0,0 \
+    hidapitester --vidpid 16C0/05DF --open \
+        -l 17 --send-output 0,2,0x00,0x80,0x00,0x40,0,0,0,0,0,0,0,0,0,0,0 \
         -l 16 --read-input 0
 
 ### Device
