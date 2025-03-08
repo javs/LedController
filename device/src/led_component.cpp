@@ -13,7 +13,7 @@ const microseconds  LEDComponent::Period = 5ms; // 200hz
 
 const milliseconds  LEDComponent::ChangeTick    = 25ms;
 const milliseconds  LEDComponent::ChangeTime    = 3000ms;
-const float         LEDComponent::UpdateCutoff  = 0.0001f;
+const float         LEDComponent::UpdateCutoff  = 0.00001f;
 
 LEDComponent::LEDComponent(PinName pin)
  : m_Pin(pin)
