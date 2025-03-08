@@ -26,12 +26,34 @@ USB controller for my monitor LED strip.
 
 #### Linux
 
-#### Permissions
+##### Permissions
 
     # Setup permissions
-    echo 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05df", MODE="0660", TAG+="uaccess"'|sudo tee -a /etc/udev/rules.d/60-leds.rules
+    sudo tee /etc/udev/rules.d/60-leds.rules <<'STOP'
+    # HID for LEDs (not used in container)
+    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05df", \
+        TAG+="uaccess"
+
+    # STLink v2
+    # From https://github.com/stlink-org/stlink/blob/master/config/udev/rules.d/49-stlinkv2-1.rules
+    # Used in container, no acl (uaccess)
+    SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374a", \
+        MODE:="0666", \
+        SYMLINK+="stlinkv2-1_%n"
+
+    SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", \
+        MODE:="0666", \
+        SYMLINK+="stlinkv2-1_%n"
+
+    SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3752", \
+        MODE:="0666", \
+        SYMLINK+="stlinkv2-1_%n"
+    STOP
+
     # Reload
     sudo udevadm control --reload-rules && sudo udevadm trigger
+
+##### Tests
 
     # Turn on
     hidapitester --vidpid 16C0/05DF --open \
@@ -71,13 +93,11 @@ Launch and build directly from vscode.
 
 #### Upload
 
-Copy binary to USB storage device, use VS Code tasks.
+Use flash-leds target, or copy to storage device.
 
 #### Console UART
 
-Use VS Code tasks.
-
-    mbed-tools sterm -p /dev/ttyACM0
+    screen /dev/ttyACM0
 
 ### Links
 

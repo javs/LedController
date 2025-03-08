@@ -15,9 +15,12 @@ RUN apt-get install -y \
     python3 \
     python3-venv \
     stlink-tools \
+    sudo \
     ;
 
 RUN apt clean
+
+RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 USER ubuntu
 WORKDIR /workspace
