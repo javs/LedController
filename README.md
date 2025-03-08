@@ -56,18 +56,7 @@ USB controller for my monitor LED strip.
 
 #### Container
 
-    podman build \
-        --tag leds-device-builder:latest \
-        device/docker
-
-    podman run \
-        --rm -it \
-        --name leds-device \
-        -v .:/src \
-        -v /run/media/$USER/NODE_F303RE/:/device \
-        --device /dev/ttyACM0 \
-        --group-add keep-groups \
-        leds-device-builder
+Launch and build directly from vscode.
 
 #### ST-Link
 

@@ -1,10 +1,18 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// For format details, see https://aka.ms/devcontainer.json.
 {
 	"name": "leds-device-code",
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
-	// pass the device to the container to use mbed cli serial console
-	// fix groups for rootless podman
-	"runArgs": ["--device=/dev/ttyACM0"]
+	// this is the embedded device
+	"runArgs": ["--device=/dev/ttyACM0"],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools-extension-pack",
+				"ms-azuretools.vscode-docker",
+				"ms-python.python"
+			]
+		}
+	}
 }
