@@ -53,6 +53,47 @@ USB controller for my monitor LED strip.
     # Reload
     sudo udevadm control --reload-rules && sudo udevadm trigger
 
+##### Start / Suspend
+
+    sudo tee /etc/systemd/system/leds-on.service <<'STOP'
+    [Unit]
+    Description=LEDs on
+    After=suspend.target
+    After=hibernate.target
+
+    [Service]
+    Type=oneshot
+    StandardOutput=journal
+    ExecStart=/usr/bin/python3 /home/haves/Projects/LEDs/led_controller/misc/usb_test.py on
+
+    [Install]
+    WantedBy=multi-user.target
+    WantedBy=suspend.target
+    WantedBy=hibernate.target
+    STOP
+    
+    sudo tee /etc/systemd/system/leds-off.service <<'STOP'
+    [Unit]
+    Description=LEDs off
+    Before=suspend.target
+    Before=hibernate.target
+    Before=poweroff.target
+    DefaultDependencies=no
+
+    [Service]
+    Type=oneshot
+    StandardOutput=journal
+    ExecStart=/usr/bin/python3 /home/haves/Projects/LEDs/led_controller/misc/usb_test.py off
+
+    [Install]
+    WantedBy=suspend.target
+    WantedBy=hibernate.target
+    WantedBy=poweroff.target
+    STOP
+
+    sudo systemctl enable --now leds-on
+    sudo systemctl enable leds-off
+
 ##### Tests
 
     # Turn on
