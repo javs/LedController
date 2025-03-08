@@ -12,6 +12,10 @@ RUN apt-get install -y \
     gcc-arm-none-eabi \
     git \
     ninja-build \
+    ;
+
+RUN apt-get install -y \
+    libhidapi-hidraw0 \
     python3 \
     python3-pip \
     python3-venv \
