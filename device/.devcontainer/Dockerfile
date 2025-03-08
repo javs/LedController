@@ -13,6 +13,7 @@ RUN apt-get install -y \
     git \
     ninja-build \
     python3 \
+    python3-pip \
     python3-venv \
     stlink-tools \
     sudo \
@@ -22,5 +23,7 @@ RUN apt clean
 
 RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
+# Don't use ubuntu's, it's patched
+RUN pip3 install --break-system-packages hid
+
 USER ubuntu
-WORKDIR /workspace

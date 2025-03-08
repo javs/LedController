@@ -93,11 +93,11 @@ Launch and build directly from vscode.
 
 #### Upload
 
-Use flash-leds target, or copy to storage device.
+Use cmake flash-leds target, or copy to storage device.
 
 #### Console UART
 
-    screen /dev/ttyACM0
+    screen /dev/ttyACM0 115200
 
 ### Links
 
