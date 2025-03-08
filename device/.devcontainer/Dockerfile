@@ -13,6 +13,8 @@ RUN apt-get install -y \
     git \
     ninja-build \
     python3 \
+    python3-venv \
+    stlink-tools \
     ;
 
 RUN apt clean

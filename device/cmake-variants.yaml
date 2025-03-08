@@ -1,0 +1,24 @@
+buildType:
+  default: Develop
+  choices:
+    Develop:
+      short: Develop
+      long: Emit debug information but also optimize
+      buildType: Develop
+    Debug:
+      short: Debug
+      long: Emit debug information and don't optimize
+      buildType: Debug
+    Release:
+      short: Release
+      long: Optimize generated code
+      buildType: Release
+board:
+  default: NUCLEO_F303RE
+  choices:
+    NUCLEO_F303RE:
+      short: NUCLEO_F303RE
+      settings:
+        MBED_TARGET: NUCLEO_F303RE
+        # For more visit - https://github.com/mbed-ce/mbed-os/wiki/Upload-Methods#upload-method-list
+        UPLOAD_METHOD: STLINK

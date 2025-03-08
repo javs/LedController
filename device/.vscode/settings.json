@@ -1,5 +1,7 @@
 {
-    "cmake.buildDirectory": "${workspaceFolder}/cmake_build/NUCLEO_F303RE/develop/GCC_ARM/",
+    "cmake.buildDirectory": "${workspaceFolder}/build/${variant:board}-${variant:buildType}",
+    "cmake.generator": "Ninja",
+    "cmake.configureOnOpen": false,
     "files.associations": {
         "*.GNU": "makefile",
         "chrono": "cpp",

@@ -1,16 +1,4 @@
-# mbed cli v1
-.build
-.mbed
-projectfiles
-mbed-os
-BUILD
+# VS Code build dir
+build/
 
-# keil
-compile_commands.json
-.clangd
-.cache
-
-
-# mbed cli v2
-.mbedbuild
-cmake_build/
+*.pyc

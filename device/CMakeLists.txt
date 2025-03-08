@@ -1,21 +1,18 @@
-cmake_minimum_required(VERSION 3.19.0)
+cmake_minimum_required(VERSION 3.19)
+cmake_policy(VERSION 3.19...3.22)
 
-set(MBED_PATH ${CMAKE_CURRENT_SOURCE_DIR}/mbed-os CACHE INTERNAL "")
-set(MBED_CONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "")
-set(APP_TARGET device)
 
-set(CMAKE_CXX_STANDARD 20 CACHE STRING "")
+set(MBED_APP_JSON_PATH mbed_app.json5)
+include(mbed-os/tools/cmake/mbed_toolchain_setup.cmake)
 
-include(${MBED_PATH}/tools/cmake/app.cmake)
+project(leds)
+include(mbed_project_setup)
 
-project(${APP_TARGET})
+add_subdirectory(mbed-os)
 
-add_subdirectory(${MBED_PATH})
+set(CMAKE_CXX_STANDARD 20)
 
-# workaround mbed not catching up 
-add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-register>)
-
-add_executable(${APP_TARGET}
+add_executable(${PROJECT_NAME}
     src/main.cpp
     src/led_component.cpp
     src/led_controller.cpp
@@ -26,20 +23,19 @@ add_executable(${APP_TARGET}
     src/auto_led_controller.cpp
 )
 
-target_include_directories(${APP_TARGET}
+target_include_directories(${PROJECT_NAME}
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/../common/
 )
 
-target_link_libraries(${APP_TARGET}
+target_link_libraries(${PROJECT_NAME}
     PRIVATE
         mbed-os
-        mbed-events
         mbed-storage-tdbstore
         mbed-usb
 )
 
-mbed_set_post_build(${APP_TARGET})
+mbed_set_post_build(${PROJECT_NAME})
 
 option(VERBOSE_BUILD "Have a verbose build process")
 if(VERBOSE_BUILD)
