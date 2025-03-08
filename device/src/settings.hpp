@@ -19,8 +19,8 @@ class Settings {
     LEDs::Common::RawLEDComponentType   m_SettingWarm   =
         std::numeric_limits<LEDs::Common::RawLEDComponentType>::max() / 2;
     LEDs::Common::RawLEDComponentType   m_SettingCool   = 0;
-    uint16_t                            m_SettingLSMin  = 0x500;
-    uint16_t                            m_SettingLSMax  = 0x6100;
+    uint16_t                            m_SettingLSMin  = 0x4000;
+    uint16_t                            m_SettingLSMax  = 0x8000;
 
     //! Read all settings and write defaults if not found
     void ReadSettings();

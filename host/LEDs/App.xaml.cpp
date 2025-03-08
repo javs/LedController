@@ -112,7 +112,6 @@ fire_and_forget App::OnUILEDsChanged(bool on, bool auto_idle, bool auto_levels, 
 fire_and_forget App::OnLEDDeviceConnected(bool on)
 {
     co_await led_device->RequestLEDs();
-    co_await led_device->SetLightSensorRange(0x4000, 0x8000);
     co_await led_device->SetIdle(false); // TODO: move out of here, reconnect on sleep
 }
 
