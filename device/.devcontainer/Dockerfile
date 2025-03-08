@@ -28,7 +28,7 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/pacman \
         python-pip \
         python-setuptools \
         python-prettytable \
-        python-future \
+        #python-future \
         python-intelhex
 
 USER root
