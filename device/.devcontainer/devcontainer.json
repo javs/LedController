@@ -4,8 +4,7 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
-	// this is the embedded device
-	"runArgs": ["--privileged"],
+	"privileged": true,
 	"customizations": {
 		"vscode": {
 			"extensions": [
