@@ -1,11 +1,19 @@
 package main
 
 import (
-	"fmt"
 	device "leds/host"
+	"log"
 )
 
 func main() {
-	d, _ := device.Find()
-	fmt.Println(d.GetState())
+	d, err := device.Find()
+	if err != nil {
+		log.Fatalln("Failed to open device: ", err)
+	}
+
+	defer d.Close()
+
+	err = d.Toggle(true)
+	log.Println(d.GetState())
+	log.Println(err)
 }
