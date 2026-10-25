@@ -66,8 +66,8 @@ func (d *Device) SetState(state *UsbMessage) (*UsbMessage, error) {
 	return d.sendUsbMessage(state)
 }
 
-// Toggle turns leds on/off and sets if this is a user or automatic action
-func (d *Device) Toggle(on bool, user bool) error {
+// ToggleUser turns leds on/off and sets user driven intent. \see ToggleIdle for automatic intent
+func (d *Device) ToggleUser(on bool, user bool) error {
 	// FIXME: rework device msg
 	state, err := d.GetState()
 
@@ -96,9 +96,12 @@ func (d *Device) ToggleIdle(on bool) error {
 		return fmt.Errorf("GetState: %w", err)
 	}
 
-	if !state.User {
-		state.On = on
+	// user overriden, dont change state
+	if state.User {
+		return nil
 	}
+
+	state.On = on
 
 	_, err = d.SetState(state)
 
@@ -153,4 +156,19 @@ func (d *Device) Close() error {
 	d.hidDevice = nil
 
 	return nil
+}
+
+func (m *UsbMessage) String() string {
+	return fmt.Sprintf("[type=%d time=%s on=%s user=%s auto=%s warm=%d cool=%d]",
+		m.MsgType,
+		time.Unix(int64(m.CurrentTime), 0).Format(time.TimeOnly),
+		onOff(m.On), onOff(m.User), onOff(m.AutoLevels),
+		m.Warm, m.Cool)
+}
+
+func onOff(b bool) string {
+	if b {
+		return "on"
+	}
+	return "off"
 }
