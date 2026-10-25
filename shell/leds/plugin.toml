@@ -1,0 +1,9 @@
+id         = "javs/leds"
+name       = "LEDs"
+version    = "1.0.0"
+plugin_api = 34
+author     = "javs"
+
+[[widget]]
+id    = "LEDs"
+entry = "widget.luau"
